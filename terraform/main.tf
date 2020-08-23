@@ -59,7 +59,107 @@ resource "aws_dynamodb_table" "command" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# API
+# IAM
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_iam_role" "SelfServiceLambdaExecutionRole" {
+  name = "SelfServiceLambdaExecutionRole"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "appsync.amazonaws.com",
+          "lambda.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::142035491160:root"
+        ]
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {}
+    }
+  ]
+}
+EOF
+  tags     = var.tags
+}
+
+resource "aws_iam_policy" "self_service_lambda_execution_policy" {
+  name        = "SelfServiceLambdaExecutionPolicy"
+  description = "Lambda Execution Policy"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:us-west-2:142035491160:secret:SelfServiceCredentials"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "states:*",
+                "secretsmanager:*",
+                "ec2:CreateNetworkInterface",
+                "logs:CreateLogStream",
+                "ec2:DescribeNetworkInterfaces",
+                "dax:*",
+                "kms:*",
+                "lambda:*",
+                "ec2:DeleteNetworkInterface",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents",
+                "s3:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": [
+                "arn:aws:dynamodb:us-west-2:142035491160:table/command",
+                "arn:aws:dynamodb:us-west-2:142035491160:table/command/*",
+            ]
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::selfservice.bradmccoy.io"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
+  role       = aws_iam_role.self_service_lambda_execution_policy.name
+  policy_arn = aws_iam_policy.self_service_lambda_execution_policy.arn
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Lambda
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "SlackSlashCommand" {
@@ -70,32 +170,22 @@ resource "aws_lambda_function" "SlackSlashCommand" {
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
     s3_key = "microservice/golang/SlackSlashCommand/aws/main.zip"
-    memory_size = 512
+    memory_size = 3008
     timeout = 300
     source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))}"
-    environment {
-    variables = {
-        ShellySigningSecret = "SlackSigningSecret"
-        }
-    }
 }
 
-resource "aws_lambda_function" "SlackProcessSubmission" {
-    function_name = "SlackProcessSubmission"
-    description = "Slack Process Submission"
-    role          = "${module.self_service_lambda_execution_role.arn}"
-    handler       = "build/microservice/golang/SlackProcessSubmission/main"
-    runtime       = "go1.x"
-    s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/golang/SlackSlashCommand/aws/main.zip"
-    memory_size = 512
-    timeout = 300
-    source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackProcessSubmission/main.zip"))}"
-    environment {
-    variables = {
-        ShellySigningSecret = "SlackSigningSecret"
-        }
-    }
+resource "aws_lambda_function" "ProcessSlackSubmission" {
+   function_name = "ProcessSlackSubmission"
+   description = "Process Slack Submission"
+   role          = "${module.self_service_lambda_execution_role.arn}"
+   handler       = "ProcessSlackSubmission::ProcessSlackSubmission.Function::FunctionHandler"
+   runtime       = "dotnetcore2.1"
+   s3_bucket = var.application_s3_bucket
+   s3_key = "microservice/dotnet/ProcessSlackSubmission/aws/ProcessSlackSubmission.zip"
+   memory_size = 3008
+   timeout = 60
+   source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))}"   
 }
 
 resource "aws_lambda_function" "SlackDynamicDataSource" {
@@ -106,12 +196,32 @@ resource "aws_lambda_function" "SlackDynamicDataSource" {
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
     s3_key = "microservice/golang/SlackDynamicDataSource/aws/main.zip"
-    memory_size = 512
+    memory_size = 3008
     timeout = 300
     source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))}"
-    environment {
-    variables = {
-        ShellySigningSecret = "SlackSigningSecret"
-        }
-    }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# API
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_api_gateway_rest_api" "api-gateway" {
+  name        = "SelfService"
+  description = "Self Service API"
+  body        = "${data.template_file.api_swagger.rendered}"
+}
+
+data "template_file" api_swagger{
+  template = "${file("./swagger.yaml")}"
+
+  vars {
+    SlackSlashCommand = aws_lambda_function.SlackSlashCommand.invoke_arn
+    ProcessSlackSubmission = aws_lambda_function.ProcessSlackSubmission.invoke_arn
+    SlackDynamicDataSource = aws_lambda_function.SlackDynamicDataSource.invoke_arn
+  }
+}
+
+resource "aws_api_gateway_deployment" "api-gateway-deployment" {
+  rest_api_id = "${aws_api_gateway_rest_api.api-gateway.id}"
+  stage_name  = "DEV"
 }

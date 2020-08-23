@@ -1,0 +1,117 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/ProcessSlackSubmission.csproj": {}
+  },
+  "projects": {
+    "/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/ProcessSlackSubmission.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/ProcessSlackSubmission.csproj",
+        "projectName": "ProcessSlackSubmission",
+        "projectPath": "/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/ProcessSlackSubmission.csproj",
+        "packagesPath": "/Users/bmccoy/.nuget/packages/",
+        "outputPath": "/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/bmccoy/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.1": {
+          "dependencies": {
+            "AWSSDK.DAX.Client": {
+              "target": "Package",
+              "version": "[1.2.1, )"
+            },
+            "AWSSDK.DynamoDBv2": {
+              "target": "Package",
+              "version": "[3.3.15.4, )"
+            },
+            "AWSSDK.KeyManagementService": {
+              "target": "Package",
+              "version": "[3.3.7.4, )"
+            },
+            "AWSSDK.Lambda": {
+              "target": "Package",
+              "version": "[3.3.19.4, )"
+            },
+            "AWSSDK.S3": {
+              "target": "Package",
+              "version": "[3.3.31.3, )"
+            },
+            "AWSSDK.SecretsManager": {
+              "target": "Package",
+              "version": "[3.3.2.32, )"
+            },
+            "AWSSDK.SecurityToken": {
+              "target": "Package",
+              "version": "[3.3.4.38, )"
+            },
+            "AWSSDK.StepFunctions": {
+              "target": "Package",
+              "version": "[3.3.3.4, )"
+            },
+            "Amazon.Lambda.Core": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "Amazon.Lambda.Serialization.Json": {
+              "target": "Package",
+              "version": "[1.4.0, )"
+            },
+            "Dapper": {
+              "target": "Package",
+              "version": "[1.50.5, )"
+            },
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.1.0, )",
+              "autoReferenced": true
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[4.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "rhel.7.2-x64": {
+          "#import": []
+        }
+      }
+    }
+  }
+}

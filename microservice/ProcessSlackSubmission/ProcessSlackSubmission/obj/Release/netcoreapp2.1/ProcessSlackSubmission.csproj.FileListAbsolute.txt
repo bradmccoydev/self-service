@@ -1,0 +1,12 @@
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/bin/Release/netcoreapp2.1/ProcessSlackSubmission.deps.json
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/bin/Release/netcoreapp2.1/ProcessSlackSubmission.runtimeconfig.json
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/bin/Release/netcoreapp2.1/ProcessSlackSubmission.runtimeconfig.dev.json
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/bin/Release/netcoreapp2.1/ProcessSlackSubmission.dll
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/bin/Release/netcoreapp2.1/ProcessSlackSubmission.pdb
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.csprojAssemblyReference.cache
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.csproj.CoreCompileInputs.cache
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.AssemblyInfoInputs.cache
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.AssemblyInfo.cs
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.dll
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.pdb
+/Users/bmccoy/Development/bradmccoydev/Shelly/lambda/ProcessSlackSubmission/ProcessSlackSubmission/obj/Release/netcoreapp2.1/ProcessSlackSubmission.genruntimeconfig.cache

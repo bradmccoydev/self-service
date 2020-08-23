@@ -1,0 +1,31 @@
+﻿<Properties StartupConfiguration="{261A3665-CDE9-49C5-B05D-9139DED925F8}|Default">
+  <MonoDevelop.Ide.ItemProperties.ProcessSlackSubmission.Tests PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="ProcessSlackSubmission/Utilities/StringHelper.cs">
+    <Files>
+      <File FileName="ProcessSlackSubmission/Utilities/StringHelper.cs" Line="1" Column="1" />
+      <File FileName="ProcessSlackSubmission/Entities/State.cs" />
+      <File FileName="ProcessSlackSubmission/Aws/AwsStepFunctionServiceAccessor.cs" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="ProcessSlackSubmission" expanded="True">
+            <Node name="ProcessSlackSubmission" expanded="True">
+              <Node name="Aws" expanded="True" />
+              <Node name="Slack" expanded="True" />
+              <Node name="Utilities" expanded="True">
+                <Node name="StringHelper.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

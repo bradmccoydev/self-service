@@ -2,7 +2,7 @@
 
 echo "Building GoLang Artifacts"
 
-for dir in lambda/*; do
+for dir in microservice/*; do
     echo build/$dir;
     GOOS=linux go build -o build/$dir/main $dir/main.go
     GOOS=linux go build -o build/$dir/UnitTests/main $dir/UnitTests/main.go
