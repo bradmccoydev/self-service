@@ -62,7 +62,7 @@ resource "aws_dynamodb_table" "command" {
 # IAM
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_iam_role" "SelfServiceLambdaExecutionRole" {
+resource "aws_iam_role" "self_service_role" {
   name = "SelfServiceLambdaExecutionRole"
   assume_role_policy = <<EOF
 {
@@ -91,7 +91,7 @@ resource "aws_iam_role" "SelfServiceLambdaExecutionRole" {
   ]
 }
 EOF
-  tags     = var.tags
+  tags = var.tags
 }
 
 resource "aws_iam_policy" "self_service_lambda_execution_policy" {
@@ -137,7 +137,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Action": "dynamodb:*",
             "Resource": [
                 "arn:aws:dynamodb:us-west-2:142035491160:table/command",
-                "arn:aws:dynamodb:us-west-2:142035491160:table/command/*",
+                "arn:aws:dynamodb:us-west-2:142035491160:table/command/*"
             ]
         },
         {
@@ -154,7 +154,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
-  role       = aws_iam_role.self_service_lambda_execution_policy.name
+  role       = aws_iam_role.self_service_role.name
   policy_arn = aws_iam_policy.self_service_lambda_execution_policy.arn
 }
 
@@ -165,40 +165,40 @@ resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
 resource "aws_lambda_function" "SlackSlashCommand" {
     function_name = "SlackSlashCommand"
     description = "Slack Slash Command"
-    role          = "${module.self_service_lambda_execution_role.arn}"
+    role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/golang/SlackSlashCommand/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/golang/SlackSlashCommand/aws/main.zip"
+    s3_key = "microservice/SlackSlashCommand/aws/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))}"
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
 }
 
 resource "aws_lambda_function" "ProcessSlackSubmission" {
    function_name = "ProcessSlackSubmission"
    description = "Process Slack Submission"
-   role          = "${module.self_service_lambda_execution_role.arn}"
+   role          = aws_iam_role.self_service_role.arn
    handler       = "ProcessSlackSubmission::ProcessSlackSubmission.Function::FunctionHandler"
    runtime       = "dotnetcore2.1"
    s3_bucket = var.application_s3_bucket
-   s3_key = "microservice/dotnet/ProcessSlackSubmission/aws/ProcessSlackSubmission.zip"
+   s3_key = "microservice/ProcessSlackSubmission/aws/ProcessSlackSubmission.zip"
    memory_size = 3008
    timeout = 60
-   source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))}"   
+   source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
 }
 
 resource "aws_lambda_function" "SlackDynamicDataSource" {
     function_name = "SlackDynamicDataSource"
     description = "Slack Dynamic Data Source"
-    role          = "${module.self_service_lambda_execution_role.arn}"
+    role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/golang/SlackDynamicDataSource/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/golang/SlackDynamicDataSource/aws/main.zip"
+    s3_key = "microservice/SlackDynamicDataSource/aws/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = "${base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))}"
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ resource "aws_api_gateway_rest_api" "api-gateway" {
 }
 
 data "template_file" api_swagger{
-  template = "${file("./swagger.yaml")}"
+  template = file("./swagger.yaml")
 
   vars {
     SlackSlashCommand = aws_lambda_function.SlackSlashCommand.invoke_arn

@@ -25,3 +25,22 @@ terraform.tfstate.backup
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+.vscode
+*.sln
+.vs
