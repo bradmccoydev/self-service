@@ -214,7 +214,7 @@ resource "aws_api_gateway_rest_api" "api-gateway" {
 data "template_file" api_swagger{
   template = file("./swagger.yaml")
 
-  vars {
+  vars = {
     SlackSlashCommand = aws_lambda_function.SlackSlashCommand.invoke_arn
     ProcessSlackSubmission = aws_lambda_function.ProcessSlackSubmission.invoke_arn
     SlackDynamicDataSource = aws_lambda_function.SlackDynamicDataSource.invoke_arn
