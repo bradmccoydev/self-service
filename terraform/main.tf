@@ -1,11 +1,11 @@
-
-locals {
-  aws_account_id = "457972698173"
-  aws_region     = "${var.aws_region}"
-  environment = "${var.environment}"
-  environment_lower = "${var.environment_lower}"
-  subnet_id = "subnet-04f6a6c14f90d19cc"
-  security_group_id = "sg-05a8fb4959cfb5bed"
+terraform {
+  backend "s3" {
+    bucket         = "selfservice.bradmccoy.io"
+    key            = "global/s3/terraform.tfstate"
+    region         = "us-west-2"
+    dynamodb_table = "terraform_self_service_locks"
+    encrypt        = true
+  }
 }
 
 resource "aws_s3_bucket" "terraform_state" {
@@ -20,5 +20,16 @@ resource "aws_s3_bucket" "terraform_state" {
         sse_algorithm = "AES256"
       }
     }
+  }
+}
+
+resource "aws_dynamodb_table" "terraform_self_service_locks" {
+  name         = "terraform_self_service_locks"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+  tags     = var.tags
+  attribute {
+    name = "LockID"
+    type = "S"
   }
 }
