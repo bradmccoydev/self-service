@@ -39,6 +39,14 @@ resource "aws_dynamodb_table" "terraform_self_service_locks" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Secrets
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_secretsmanager_secret" "app_secret" {
+  name = var.secret_id
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Datastore
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -46,14 +54,20 @@ resource "aws_dynamodb_table" "command" {
   name           = "command"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "command"
-  range_key      = "team"
   tags = var.tags
     attribute {
     name = "command"
     type = "S"
   }
+}
+
+resource "aws_dynamodb_table" "submission_table" {
+  name           = "submission"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  tags = var.tags
     attribute {
-    name = "team"
+    name = "id"
     type = "S"
   }
 }
@@ -173,7 +187,11 @@ resource "aws_lambda_function" "SlackSlashCommand" {
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
-}
+    environment {
+      variables = {
+        secret_id = var.secret_id
+      }
+    }
 
 resource "aws_lambda_function" "ProcessSlackSubmission" {
    function_name = "ProcessSlackSubmission"
@@ -186,7 +204,11 @@ resource "aws_lambda_function" "ProcessSlackSubmission" {
    memory_size = 3008
    timeout = 60
    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
-}
+   environment {
+    variables = {
+      secret_id = var.secret_id
+    }
+   }
 
 resource "aws_lambda_function" "SlackDynamicDataSource" {
     function_name = "SlackDynamicDataSource"
@@ -199,7 +221,11 @@ resource "aws_lambda_function" "SlackDynamicDataSource" {
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
-}
+    environment {
+      variables = {
+        secret_id = var.secret_id
+      }
+   }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # API
@@ -208,7 +234,7 @@ resource "aws_lambda_function" "SlackDynamicDataSource" {
 resource "aws_api_gateway_rest_api" "api-gateway" {
   name        = "SelfService"
   description = "Self Service API"
-  body        = "${data.template_file.api_swagger.rendered}"
+  body        = data.template_file.api_swagger.rendered
 }
 
 data "template_file" api_swagger{
@@ -224,4 +250,31 @@ data "template_file" api_swagger{
 resource "aws_api_gateway_deployment" "api-gateway-deployment" {
   rest_api_id = "${aws_api_gateway_rest_api.api-gateway.id}"
   stage_name  = "DEV"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Messaging
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_sns_topic" "sns_submission" {
+  name = "self-service-submission"
+  delivery_policy = <<EOF
+{
+  "http": {
+    "defaultHealthyRetryPolicy": {
+      "minDelayTarget": 20,
+      "maxDelayTarget": 20,
+      "numRetries": 3,
+      "numMaxDelayRetries": 0,
+      "numNoDelayRetries": 0,
+      "numMinDelayRetries": 0,
+      "backoffFunction": "linear"
+    },
+    "disableSubscriptionOverrides": false,
+    "defaultThrottlePolicy": {
+      "maxReceivesPerSecond": 1
+    }
+  }
+}
+EOF
 }

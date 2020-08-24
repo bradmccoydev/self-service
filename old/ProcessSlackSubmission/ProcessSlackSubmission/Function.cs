@@ -30,7 +30,7 @@ namespace ProcessSlackSubmission
             Logger logger = new Logger();
 
             var environment = Environment.GetEnvironmentVariable("Environment");
-            var slackAppCredentials = Environment.GetEnvironmentVariable("SlackAppCredentials");
+            var slackAppCredentials = Environment.GetEnvironmentVariable("secret_id");
             var region = Environment.GetEnvironmentVariable("Region");
             var daxUrl = Environment.GetEnvironmentVariable("DaxUrl");
             int daxPort = Int32.Parse(Environment.GetEnvironmentVariable("DaxPort"));

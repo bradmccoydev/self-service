@@ -10,16 +10,11 @@
   <_________>
   ```
 
-  Scopes
-A Slack app's capabilities and permissions are governed by the scopes it requests.
+Scopes
 
-Bot Token Scopes
+## Bot Token Scopes
 Scopes that govern what your app can access.
 
-OAuth
-Scope
-Description
- 
 calls:read
 View information about ongoing and past calls
 
@@ -31,9 +26,6 @@ View basic information about public channels in the workspace
 
 chat:write
 Send messages as @shelly
-
-commands
-Add shortcuts and/or slash commands that people can use
 
 dnd:read
 View Do Not Disturb settings for people in the workspace
@@ -55,9 +47,6 @@ View basic information about direct messages that Shelly has been added to
 
 im:write
 Start direct messages with people
-
-incoming-webhook
-Post messages to specific channels in Slack
 
 mpim:history
 View messages and other content in group direct messages that Shelly has been added to
@@ -99,4 +88,4 @@ users:read.email
 View email addresses of people in the workspace
 
 users:write
-Set presence for Shelly
+Set presence for Self Service

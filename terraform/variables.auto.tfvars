@@ -3,6 +3,7 @@ aws_region = "us-west-2"
 environment = "DEV"
 environment_lower = "staging"
 application_s3_bucket = "selfservice.bradmccoy.io"
+secret_id = "self-service"
 tags = {
     "provisioner"   = "terraform"
     "owner"         = "bradmccoy@gmail.com"

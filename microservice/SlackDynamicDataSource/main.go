@@ -11,14 +11,14 @@ import (
 	"os"
 	"strings"
 
-	dynamodb "github.com/bradmccoydev/pkg/dynamodb"
-	lambdaInvoker "github.com/bradmccoydev/pkg/lambdainvoker"
-	stringHelper "github.com/bradmccoydev/pkg/stringhelper"
+	"github.com/bradmccoydev/pkg/lambdainvoker"
 	_ "github.com/lib/pq"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	_ "github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 )
 
@@ -73,7 +73,7 @@ type ExternalDataSource struct {
 }
 
 func Handler(request Request) (string, error) {
-	signingSecretKey := os.Getenv("ShellySigningSecret")
+	signingSecretKey := os.Getenv("self-service")
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -101,21 +101,16 @@ func Handler(request Request) (string, error) {
 	h.Write([]byte(signatureBaseString))
 	sha := hex.EncodeToString(h.Sum(nil))
 
-	fmt.Println(request.Headers.XSlackSignature)
-	fmt.Println("v0=" + sha)
-
 	if request.Headers.XSlackSignature != "v0="+sha {
 		newError := strings.Replace(output, "Error", "UnAuth", -1)
 		fmt.Println(newError)
+		return "User not authorised", nil
 	}
 
 	decodedValue, err := url.QueryUnescape(request.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println("Decoded: " + decodedValue)
-	fmt.Println("Header: " + request.Headers.XSlackRequestTimestamp)
 
 	suggestion := strings.Replace(decodedValue, "payload=", "", -1)
 	fmt.Println("Suggestion: " + suggestion)
@@ -126,8 +121,8 @@ func Handler(request Request) (string, error) {
 	fmt.Println("callback: ", dialogSuggestion.CallbackID)
 	fmt.Println("callback: ", dialogSuggestion.Team.ID)
 
-	externalDataSourceJSON := dynamodb.GetCommandDetails(
-		"command-production",
+	externalDataSourceJSON := GetCommandDetails(
+		"command",
 		dialogSuggestion.CallbackID,
 		dialogSuggestion.Team.ID,
 		"external_data_source")
@@ -155,7 +150,7 @@ func Handler(request Request) (string, error) {
 			source = dataSource.Source
 
 			if source == "DynamoDb" {
-				value = stringHelper.GetStateValue(dialogSuggestion.State, dataSource.Value)
+				value = GetStateValue(dialogSuggestion.State, dataSource.Value)
 			}
 
 			tableName = dataSource.Table
@@ -165,13 +160,13 @@ func Handler(request Request) (string, error) {
 	}
 
 	if source == "Lambda" {
-		output = lambdaInvoker.InvokeLambda(tableName, "brad", "mccoy")
+		output = lambdainvoker.InvokeLambda(tableName, "brad", "mccoy")
 		output = strings.TrimSuffix(output, "\"")
 		output = strings.TrimPrefix(output, "\"")
 	}
 
 	if source == "DynamoDb" {
-		output = dynamodb.GetStringListQuery(
+		output = GetStringListQuery(
 			tableName,
 			key,
 			value,
@@ -185,4 +180,141 @@ func Handler(request Request) (string, error) {
 
 func main() {
 	lambda.Start(Handler)
+}
+
+func GetStateValue(state string, name string) string {
+	state = strings.Replace(state, "{", "", -1)
+	state = strings.Replace(state, "}", "", -1)
+
+	attribute := ""
+	value := ""
+	lines := strings.Split(state, "',")
+
+	for _, line := range lines {
+		x := before(line, "':")
+		y := after(line, ":'")
+		attribute = strings.Replace(x, "'", "", -1)
+		value = strings.Replace(y, "'", "", -1)
+
+		if attribute == name {
+			fmt.Printf("match:" + value)
+			return value
+		}
+	}
+	return "Error"
+}
+
+func before(value string, a string) string {
+	pos := strings.Index(value, a)
+	if pos == -1 {
+		return ""
+	}
+	return value[0:pos]
+}
+
+func after(value string, a string) string {
+	pos := strings.LastIndex(value, a)
+	if pos == -1 {
+		return ""
+	}
+	adjustedPos := pos + len(a)
+	if adjustedPos >= len(value) {
+		return ""
+	}
+	return value[adjustedPos:len(value)]
+}
+
+func GetCommandDetails(
+	tableName string,
+	partitionKey string,
+	sortKey string,
+	attribute string) string {
+
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := dynamodb.New(sess)
+
+	params := &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		AttributesToGet: []*string{
+			aws.String(attribute),
+		},
+		Key: map[string]*dynamodb.AttributeValue{
+			"command": {
+				S: aws.String(partitionKey),
+			},
+			"team": {
+				S: aws.String(sortKey),
+			},
+		},
+	}
+
+	resp, err := svc.GetItem(params)
+
+	if err != nil {
+		fmt.Println("Got error decrypting data: ", err)
+		os.Exit(1)
+	}
+
+	output := ""
+
+	for _, line := range resp.Item {
+		output = *line.S
+	}
+
+	return output
+}
+
+func GetStringListQuery(
+	tableName string,
+	key string,
+	value string,
+	attribute string) string {
+
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := dynamodb.New(sess)
+
+	params := &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		AttributesToGet: []*string{
+			aws.String(attribute),
+		},
+		Key: map[string]*dynamodb.AttributeValue{
+			key: {
+				S: aws.String(value),
+			},
+		},
+	}
+
+	resp, err := svc.GetItem(params)
+
+	if err != nil {
+		fmt.Println("Got error decrypting data: ", err)
+		os.Exit(1)
+	}
+
+	output := "{'options':["
+
+	for _, line := range resp.Item {
+		for _, x := range line.L {
+			attribute := strings.Replace(*x.S, "url=", "", -1)
+			if len(attribute) > 69 {
+				attribute = "Value To Long"
+			}
+			output = output + "{'label':'" + attribute + "','value':'" + attribute + "'},"
+		}
+	}
+
+	output = strings.TrimSuffix(output, ",")
+	output = output + "]}"
+
+	fmt.Println(output)
+
+	return output
+
 }

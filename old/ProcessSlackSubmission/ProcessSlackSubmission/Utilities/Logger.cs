@@ -72,7 +72,7 @@ namespace ProcessSlackSubmission.Utilities
                 var folderName = $"/year={date.Year}/month={date.ToString("MM")}/day={date.ToString("dd")}";
 
                 await UploadFileToS3BucketFromByteArrayAsync(
-                    bucketName: "acs-selfservice-logs",
+                    bucketName: "bradmccoy.io",
                     folderName: folderName,
                     region: region,
                     targetFileName: $"{id.Replace(".","")}.csv",
@@ -99,7 +99,7 @@ namespace ProcessSlackSubmission.Utilities
 
                 await PutItemJsonAsync(
                     region: region,
-                    tableName: "submission-production",
+                    tableName: "submission",
                     json: jsonString);
 
                 LogEntry logEntry = new LogEntry();

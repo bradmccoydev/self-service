@@ -54,8 +54,7 @@ type Secrets struct {
 }
 
 func Handler(request Request) (string, error) {
-	signingSecretKey := os.Getenv("SlackAppCredentialsStaging")
-
+	signingSecretKey := os.Getenv("self-service")
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -84,8 +83,8 @@ func Handler(request Request) (string, error) {
 	sha := hex.EncodeToString(h.Sum(nil))
 
 	if request.Headers.XSlackSignature != "v0="+sha {
-		fmt.Println(request.Headers.XSlackSignature)
-		fmt.Println("v0=" + sha)
+		fmt.Println("Signature Did Not Match")
+		return "User not authorised", nil
 	}
 
 	currentTime := time.Now().Unix()
@@ -93,7 +92,7 @@ func Handler(request Request) (string, error) {
 	fmt.Println(currentTime)
 	fmt.Println(str)
 
-	dynamodb.LogRequest("brad", "bradmccoydev@gmail.com", "dojo", "brad", "payload", "endpoint", "approvers", "d", "d", "d", "", "submission-production")
+	dynamodb.LogRequest("brad", "bradmccoydev@gmail.com", "dojo", "brad", "payload", "endpoint", "approvers", "d", "d", "d", "", "submission")
 
 	return "Thanks for executing the slash command", nil
 }
