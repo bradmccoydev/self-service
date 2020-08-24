@@ -176,7 +176,7 @@ resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
 # Lambda
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "SlackSlashCommand" {
+resource "aws_lambda_function" "slack_slash_command" {
     function_name = "SlackSlashCommand"
     description = "Slack Slash Command"
     role          = aws_iam_role.self_service_role.arn
@@ -192,8 +192,14 @@ resource "aws_lambda_function" "SlackSlashCommand" {
         secret_id = var.secret_id
       }
     }
+}
 
-resource "aws_lambda_function" "ProcessSlackSubmission" {
+resource "aws_cloudwatch_log_group" "slack_slash_command_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.slack_slash_command.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_lambda_function" "process_slack_submission" {
    function_name = "ProcessSlackSubmission"
    description = "Process Slack Submission"
    role          = aws_iam_role.self_service_role.arn
@@ -209,8 +215,14 @@ resource "aws_lambda_function" "ProcessSlackSubmission" {
       secret_id = var.secret_id
     }
    }
+}
 
-resource "aws_lambda_function" "SlackDynamicDataSource" {
+resource "aws_cloudwatch_log_group" "process_slack_submission_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.process_slack_submission.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_lambda_function" "slack_dynamic_data_source" {
     function_name = "SlackDynamicDataSource"
     description = "Slack Dynamic Data Source"
     role          = aws_iam_role.self_service_role.arn
@@ -226,6 +238,12 @@ resource "aws_lambda_function" "SlackDynamicDataSource" {
         secret_id = var.secret_id
       }
    }
+}
+
+resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.slack_dynamic_data_source.function_name}"
+  retention_in_days = 7
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # API
@@ -241,14 +259,14 @@ data "template_file" api_swagger{
   template = file("./swagger.yaml")
 
   vars = {
-    SlackSlashCommand = aws_lambda_function.SlackSlashCommand.invoke_arn
-    ProcessSlackSubmission = aws_lambda_function.ProcessSlackSubmission.invoke_arn
-    SlackDynamicDataSource = aws_lambda_function.SlackDynamicDataSource.invoke_arn
+    SlackSlashCommand = aws_lambda_function.slack_slash_command.invoke_arn
+    ProcessSlackSubmission = aws_lambda_function.process_slack_submission.invoke_arn
+    SlackDynamicDataSource = aws_lambda_function.slack_dynamic_data_source.invoke_arn
   }
 }
 
 resource "aws_api_gateway_deployment" "api-gateway-deployment" {
-  rest_api_id = "${aws_api_gateway_rest_api.api-gateway.id}"
+  rest_api_id = aws_api_gateway_rest_api.api-gateway.id
   stage_name  = "DEV"
 }
 

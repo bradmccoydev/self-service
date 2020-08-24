@@ -10,12 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	dynamodb "github.com/bradmccoydev/pkg/dynamodb"
-
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/bradmccoydev/pkg/dynamodb"
 )
 
 type Request struct {

@@ -21,3 +21,7 @@ variable "application_s3_bucket" {
 variable "tags" {
   description = "AWS Tags"
 }
+
+variable "secret_id" {
+  description = "Secret ID"
+}
