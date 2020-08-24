@@ -8,10 +8,10 @@ compile:
 		go get "github.com/bradmccoydev/pkg/slack"
 		GOOS=linux go build -o main main.go
 test:   compile
-		docker run --rm -v "/Users/bmccoy/Development/ACS-GitLab/self-service/SlackDynamicDataSource":/var/task lambci/lambda:go1.x main '{"JiraAdminUser": "bmccoy"}'
+		docker run --rm -v "/Users/bmccoy/Development/bradmccoydev/self-service/SlackDynamicDataSource":/var/task lambci/lambda:go1.x main '{"JiraAdminUser": "bmccoy"}'
 ship:   compile
-		cd ~/Development/ACS-GitLab/self-service/build/SlackDynamicDataSource; zip -r main.zip main
-		cd ~/Development/ACS-GitLab/self-service/functions/SlackDynamicDataSource/terraform; terraform init;terraform apply
+		cd ~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource; zip -r main.zip main
+		cd ~/Development/bradmccoydev/self-service/functions/SlackDynamicDataSource/terraform; terraform init;terraform apply
 install: go get "github.com/aws/aws-lambda-go/lambda"
 		go get "github.com/aws/aws-sdk-go/aws"
 		go get "github.com/aws/aws-sdk-go/aws/credentials"

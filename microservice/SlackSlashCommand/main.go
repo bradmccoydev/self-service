@@ -93,7 +93,7 @@ func Handler(request Request) (string, error) {
 	fmt.Println(currentTime)
 	fmt.Println(str)
 
-	dynamodb.LogRequest("brad", "bradmccoydev@gmail.com", "temenos-self-service", "brad", "payload", "endpoint", "approvers", "d", "d", "d", "", "submission-production")
+	dynamodb.LogRequest("brad", "bradmccoydev@gmail.com", "dojo", "brad", "payload", "endpoint", "approvers", "d", "d", "d", "", "submission-production")
 
 	return "Thanks for executing the slash command", nil
 }

@@ -1,3 +1,7 @@
+variable "aws_account_id" {
+  description = "Aws Account ID"
+}
+
 variable "aws_region" {
   description = "Aws Region"
 }
@@ -10,7 +14,7 @@ variable "environment_lower" {
   description = "Environment Name Lower"
 }
 
-variable "state_s3_bucket" {
+variable "application_s3_bucket" {
   description = "AWS S3 State Bucket"
 }
 
