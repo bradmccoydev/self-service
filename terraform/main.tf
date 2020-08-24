@@ -180,7 +180,7 @@ resource "aws_lambda_function" "slack_slash_command" {
     function_name = "SlackSlashCommand"
     description = "Slack Slash Command"
     role          = aws_iam_role.self_service_role.arn
-    handler       = "build/microservice/golang/SlackSlashCommand/main"
+    handler       = "build/microservice/SlackSlashCommand/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
     s3_key = "microservice/SlackSlashCommand/aws/main.zip"
@@ -226,7 +226,7 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
     function_name = "SlackDynamicDataSource"
     description = "Slack Dynamic Data Source"
     role          = aws_iam_role.self_service_role.arn
-    handler       = "build/microservice/golang/SlackDynamicDataSource/main"
+    handler       = "build/microservice/SlackDynamicDataSource/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
     s3_key = "microservice/SlackDynamicDataSource/aws/main.zip"
