@@ -249,7 +249,7 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
 # API
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_api_gateway_rest_api" "api-gateway" {
+resource "aws_api_gateway_rest_api" "api_gateway" {
   name        = "SelfService"
   description = "Self Service API"
   body        = data.template_file.api_swagger.rendered
@@ -266,8 +266,32 @@ data "template_file" api_swagger{
 }
 
 resource "aws_api_gateway_deployment" "api-gateway-deployment" {
-  rest_api_id = aws_api_gateway_rest_api.api-gateway.id
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = "DEV"
+}
+
+resource "aws_lambda_permission" "apigw_permission_slash_command" {
+   statement_id  = "AllowAPIGatewayInvoke"
+   action        = "lambda:InvokeFunction"
+   function_name = aws_lambda_function.slack_slash_command.function_name
+   principal     = "apigateway.amazonaws.com"
+   source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_permission_process_submission" {
+   statement_id  = "AllowAPIGatewayInvoke"
+   action        = "lambda:InvokeFunction"
+   function_name = aws_lambda_function.process_slack_submission.function_name
+   principal     = "apigateway.amazonaws.com"
+   source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_permission_dynamic_data_source" {
+   statement_id  = "AllowAPIGatewayInvoke"
+   action        = "lambda:InvokeFunction"
+   function_name = aws_lambda_function.slack_dynamic_data_source.function_name
+   principal     = "apigateway.amazonaws.com"
+   source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
