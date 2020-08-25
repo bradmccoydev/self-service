@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/bradmccoydev/pkg/dynamodb"
 )
 
 type Request struct {
@@ -112,23 +111,33 @@ func Handler(request Request) (string, error) {
 	var secrets Secrets
 	json.Unmarshal([]byte(*result.SecretString), &secrets)
 
+	fmt.Print("##")
+	fmt.Printf(secrets.SigningSecret)
+	fmt.Print("##")
+
 	signatureBaseString := fmt.Sprintf("v0:%v:%v", request.Headers.XSlackRequestTimestamp, request.Body)
 
 	h := hmac.New(sha256.New, []byte(secrets.SigningSecret))
 	h.Write([]byte(signatureBaseString))
 	sha := hex.EncodeToString(h.Sum(nil))
 
+	fmt.Printf("*")
+	fmt.Printf("v0=" + sha)
+	fmt.Printf("**")
+	fmt.Printf(request.Headers.XSlackSignature)
+	fmt.Printf("***")
+
 	if request.Headers.XSlackSignature != "v0="+sha {
 		fmt.Println("Signature Did Not Match")
 		return "User not authorised", nil
 	}
 
+	fmt.Printf("****")
+
 	currentTime := time.Now().Unix()
 	str := strconv.FormatInt(currentTime, 10)
 	fmt.Println(currentTime)
 	fmt.Println(str)
-
-	dynamodb.LogRequest("brad", "bradmccoydev@gmail.com", "dojo", "brad", "payload", "endpoint", "approvers", "d", "d", "d", "", "submission")
 
 	return "Thanks for executing the slash command", nil
 }

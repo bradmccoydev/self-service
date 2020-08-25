@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Terraform State
 # ---------------------------------------------------------------------------------------------------------------------
-
 terraform {
   backend "s3" {
     bucket         = "selfservice.bradmccoy.io"
@@ -35,6 +34,12 @@ resource "aws_dynamodb_table" "terraform_self_service_locks" {
   attribute {
     name = "LockID"
     type = "S"
+  }
+}
+
+resource "null_resource" "deploy" {
+  provisioner "local-exec" {
+    command = "/bin/bash sudo deploy.sh"
   }
 }
 
@@ -171,6 +176,52 @@ resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
   policy_arn = aws_iam_policy.self_service_lambda_execution_policy.arn
 }
 
+resource "aws_iam_role" "cloudwatch" {
+  name = "api_gateway_cloudwatch_global"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "cloudwatch" {
+  name = "default"
+  role = "${aws_iam_role.cloudwatch.id}"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Lambda
 # ---------------------------------------------------------------------------------------------------------------------
@@ -186,6 +237,9 @@ resource "aws_lambda_function" "slack_slash_command" {
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+    depends_on = [
+      null_resource.deploy
+    ]
     environment {
       variables = {
         secret_id = var.secret_id
@@ -211,6 +265,9 @@ resource "aws_lambda_function" "process_slack_submission" {
    memory_size = 3008
    timeout = 60
    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
+   depends_on = [
+      null_resource.deploy
+    ]
    environment {
     variables = {
       secret_id = var.secret_id
@@ -236,6 +293,9 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
+    depends_on = [
+      null_resource.deploy
+    ]
     environment {
       variables = {
         secret_id = var.secret_id
@@ -253,6 +313,9 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
 # ---------------------------------------------------------------------------------------------------------------------
 # API
 # ---------------------------------------------------------------------------------------------------------------------
+resource "aws_api_gateway_account" "api_gw_account" {
+  cloudwatch_role_arn = "${aws_iam_role.cloudwatch.arn}"
+}
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
   name        = "SelfService"
