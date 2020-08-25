@@ -2,13 +2,14 @@
 
 echo "Building GoLang Artifacts"
 
-for dir in microservice/*; do
-    echo build/$dir;
-    GOOS=linux go build -o build/$dir/main $dir/main.go
-    GOOS=linux go build -o build/$dir/UnitTests/main $dir/UnitTests/main.go
-    zip -r build/$dir/main.zip build/$dir/main
-    aws --region us-west-2 s3 cp build/$dir/main.zip s3://selfservice.bradmccoy.io/$dir/aws/main.zip
-    aws --region us-west-2 s3 cp build/$dir/UnitTests/main s3://selfservice.bradmccoy.io/$dir/UnitTests/main
-done
+echo "Building Test Artifacts"
+    GOOS=linux go build -o build/microservice/SlackSlashCommand/main microservice/SlackSlashCommand/main.go
+    zip -r build/microservice/SlackSlashCommand/main.zip build/microservice/SlackSlashCommand/main
+    aws --region us-west-2 s3 cp build/microservice/SlackSlashCommand/main.zip s3://selfservice.bradmccoy.io/microservice/SlackSlashCommand/main.zip
+
+    GOOS=linux go build -o build/microservice/SlackDynamicDataSource/main microservice/SlackDynamicDataSource/main.go
+    zip -r build/microservice/SlackDynamicDataSource/main.zip build/microservice/SlackDynamicDataSource/main
+    aws --region us-west-2 s3 cp build/microservice/SlackDynamicDataSource/main.zip s3://selfservice.bradmccoy.io/microservice/SlackDynamicDataSource/main.zip
+
 
 echo "Artifacts Built"

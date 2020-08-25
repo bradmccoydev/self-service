@@ -61,7 +61,7 @@ resource "aws_dynamodb_table" "command" {
   }
 }
 
-resource "aws_dynamodb_table" "submission_table" {
+resource "aws_dynamodb_table" "submission" {
   name           = "submission"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
@@ -86,7 +86,6 @@ resource "aws_iam_role" "self_service_role" {
       "Effect": "Allow",
       "Principal": {
         "Service": [
-          "appsync.amazonaws.com",
           "lambda.amazonaws.com"
         ]
       },
@@ -96,7 +95,7 @@ resource "aws_iam_role" "self_service_role" {
       "Effect": "Allow",
       "Principal": {
         "AWS": [
-          "arn:aws:iam::142035491160:root"
+          "arn:aws:iam::${var.aws_account_id}:root"
         ]
       },
       "Action": "sts:AssumeRole",
@@ -123,7 +122,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "secretsmanager:DescribeSecret"
             ],
             "Resource": [
-                "arn:aws:secretsmanager:us-west-2:142035491160:secret:SelfServiceCredentials"
+                "${aws_secretsmanager_secret.app_secret.arn}"
             ]
         },
         {
@@ -131,7 +130,6 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": [
                 "states:*",
-                "secretsmanager:*",
                 "ec2:CreateNetworkInterface",
                 "logs:CreateLogStream",
                 "ec2:DescribeNetworkInterfaces",
@@ -140,8 +138,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "lambda:*",
                 "ec2:DeleteNetworkInterface",
                 "logs:CreateLogGroup",
-                "logs:PutLogEvents",
-                "s3:*"
+                "logs:PutLogEvents"
             ],
             "Resource": "*"
         },
@@ -150,8 +147,10 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "arn:aws:dynamodb:us-west-2:142035491160:table/command",
-                "arn:aws:dynamodb:us-west-2:142035491160:table/command/*"
+                "${aws_dynamodb_table.command.arn}",
+                "${aws_dynamodb_table.command.arn}/*",
+                "${aws_dynamodb_table.submission.arn}",
+                "${aws_dynamodb_table.submission.arn}/*"
             ]
         },
         {
@@ -159,7 +158,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::selfservice.bradmccoy.io"
+                "${aws_s3_bucket.terraform_state.arn}"
             ]
         }
     ]
@@ -183,13 +182,15 @@ resource "aws_lambda_function" "slack_slash_command" {
     handler       = "build/microservice/SlackSlashCommand/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/SlackSlashCommand/aws/main.zip"
+    s3_key = "microservice/SlackSlashCommand/main.zip"
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
       }
     }
 }
@@ -206,13 +207,15 @@ resource "aws_lambda_function" "process_slack_submission" {
    handler       = "ProcessSlackSubmission::ProcessSlackSubmission.Function::FunctionHandler"
    runtime       = "dotnetcore2.1"
    s3_bucket = var.application_s3_bucket
-   s3_key = "microservice/ProcessSlackSubmission/aws/ProcessSlackSubmission.zip"
+   s3_key = "microservice/ProcessSlackSubmission/ProcessSlackSubmission.zip"
    memory_size = 3008
    timeout = 60
    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
    environment {
     variables = {
       secret_id = var.secret_id
+      region = var.aws_region
+      environment = var.environment
     }
    }
 }
@@ -229,13 +232,15 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
     handler       = "build/microservice/SlackDynamicDataSource/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/SlackDynamicDataSource/aws/main.zip"
+    s3_key = "microservice/SlackDynamicDataSource/main.zip"
     memory_size = 3008
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
       }
    }
 }

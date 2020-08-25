@@ -44,3 +44,7 @@ msbuild.wrn
 .vscode
 *.sln
 .vs
+
+#golang
+main
+main.zip

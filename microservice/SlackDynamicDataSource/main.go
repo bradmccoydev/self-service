@@ -73,7 +73,7 @@ type ExternalDataSource struct {
 }
 
 func Handler(request Request) (string, error) {
-	signingSecretKey := os.Getenv("self-service")
+	signingSecretKey := os.Getenv("secret_id")
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
