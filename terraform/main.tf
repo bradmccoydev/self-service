@@ -59,9 +59,14 @@ resource "aws_dynamodb_table" "command" {
   name           = "command"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "command"
+  range_key      = "team"
   tags = var.tags
     attribute {
     name = "command"
+    type = "S"
+  }
+    attribute {
+    name = "team"
     type = "S"
   }
 }
@@ -70,9 +75,14 @@ resource "aws_dynamodb_table" "submission" {
   name           = "submission"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
+  range_key      = "team"
   tags = var.tags
     attribute {
     name = "id"
+    type = "S"
+  }
+    attribute {
+    name = "team"
     type = "S"
   }
 }
@@ -198,7 +208,7 @@ EOF
 
 resource "aws_iam_role_policy" "cloudwatch" {
   name = "default"
-  role = "${aws_iam_role.cloudwatch.id}"
+  role = aws_iam_role.cloudwatch.id
 
   policy = <<EOF
 {
@@ -314,7 +324,7 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
 # API
 # ---------------------------------------------------------------------------------------------------------------------
 resource "aws_api_gateway_account" "api_gw_account" {
-  cloudwatch_role_arn = "${aws_iam_role.cloudwatch.arn}"
+  cloudwatch_role_arn = aws_iam_role.cloudwatch.arn
 }
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
@@ -335,7 +345,7 @@ data "template_file" api_swagger{
 
 resource "aws_api_gateway_deployment" "api-gateway-deployment" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  stage_name  = "DEV"
+  stage_name  = var.environment
 }
 
 resource "aws_lambda_permission" "apigw_permission_slash_command" {

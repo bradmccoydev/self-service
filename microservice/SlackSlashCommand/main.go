@@ -28,21 +28,30 @@ type Request struct {
 		UserName    string `json:"user_name"`
 		Command     string `json:"command"`
 		Text        string `json:"text"`
+		APIAppID    string `json:"api_app_id"`
 		ResponseURL string `json:"response_url"`
 		TriggerID   string `json:"trigger_id"`
 	} `json:"body"`
 	Headers struct {
-		Accept                 string `json:"Accept"`
-		AcceptEncoding         string `json:"Accept-Encoding"`
-		ContentType            string `json:"Content-Type"`
-		Host                   string `json:"Host"`
-		UserAgent              string `json:"User-Agent"`
-		XAmznTraceID           string `json:"X-Amzn-Trace-Id"`
-		XForwardedFor          string `json:"X-Forwarded-For"`
-		XForwardedPort         string `json:"X-Forwarded-Port"`
-		XForwardedProto        string `json:"X-Forwarded-Proto"`
-		XSlackRequestTimestamp string `json:"X-Slack-Request-Timestamp"`
-		XSlackSignature        string `json:"X-Slack-Signature"`
+		Accept                    string `json:"Accept"`
+		AcceptEncoding            string `json:"Accept-Encoding"`
+		CloudFrontForwardedProto  string `json:"CloudFront-Forwarded-Proto"`
+		CloudFrontIsDesktopViewer string `json:"CloudFront-Is-Desktop-Viewer"`
+		CloudFrontIsMobileViewer  string `json:"CloudFront-Is-Mobile-Viewer"`
+		CloudFrontIsSmartTVViewer string `json:"CloudFront-Is-SmartTV-Viewer"`
+		CloudFrontIsTabletViewer  string `json:"CloudFront-Is-Tablet-Viewer"`
+		CloudFrontViewerCountry   string `json:"CloudFront-Viewer-Country"`
+		ContentType               string `json:"Content-Type"`
+		Host                      string `json:"Host"`
+		UserAgent                 string `json:"User-Agent"`
+		Via                       string `json:"Via"`
+		XAmzCfID                  string `json:"X-Amz-Cf-Id"`
+		XAmznTraceID              string `json:"X-Amzn-Trace-Id"`
+		XForwardedFor             string `json:"X-Forwarded-For"`
+		XForwardedPort            string `json:"X-Forwarded-Port"`
+		XForwardedProto           string `json:"X-Forwarded-Proto"`
+		XSlackRequestTimestamp    string `json:"X-Slack-Request-Timestamp"`
+		XSlackSignature           string `json:"X-Slack-Signature"`
 	} `json:"headers"`
 }
 
@@ -111,18 +120,41 @@ func Handler(request Request) (string, error) {
 	var secrets Secrets
 	json.Unmarshal([]byte(*result.SecretString), &secrets)
 
-	fmt.Print("##")
-	fmt.Printf(secrets.SigningSecret)
-	fmt.Print("##")
+	now := time.Now()
+	n, err := strconv.ParseInt(request.Headers.XSlackRequestTimestamp, 10, 64)
+	if err != nil {
+		fmt.Printf("%d of type %T", n, n)
+	}
+	if (now.Unix() - n) > 60*5 {
+		fmt.Println("replay attack")
+		return "Replay Attack", nil
+	}
+
+	fmt.Printf(fmt.Sprintf("%v", request.Body))
+
+	sigBasestring := "v0:" + request.Headers.XSlackRequestTimestamp + ":" + fmt.Sprintf("%v", request.Body)
+	secret := secrets.SigningSecret
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write([]byte(sigBasestring))
+
+	sha := hex.EncodeToString(h.Sum(nil))
+	sha = "v0=" + sha
+
+	fmt.Printf("@@")
+	fmt.Printf(sha)
+
+	if sha != request.Headers.XSlackSignature {
+		fmt.Println("signature mismatch11")
+	}
 
 	signatureBaseString := fmt.Sprintf("v0:%v:%v", request.Headers.XSlackRequestTimestamp, request.Body)
 
-	h := hmac.New(sha256.New, []byte(secrets.SigningSecret))
-	h.Write([]byte(signatureBaseString))
-	sha := hex.EncodeToString(h.Sum(nil))
+	ha := hmac.New(sha256.New, []byte(secrets.SigningSecret))
+	ha.Write([]byte(signatureBaseString))
+	shas := hex.EncodeToString(ha.Sum(nil))
 
 	fmt.Printf("*")
-	fmt.Printf("v0=" + sha)
+	fmt.Printf("v0=" + shas)
 	fmt.Printf("**")
 	fmt.Printf(request.Headers.XSlackSignature)
 	fmt.Printf("***")
