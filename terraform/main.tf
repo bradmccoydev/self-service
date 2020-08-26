@@ -188,7 +188,6 @@ resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
 
 resource "aws_iam_role" "cloudwatch" {
   name = "api_gateway_cloudwatch_global"
-
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
