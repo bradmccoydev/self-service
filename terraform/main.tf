@@ -245,7 +245,7 @@ resource "aws_lambda_function" "slack_slash_command" {
     s3_key = "microservice/SlackSlashCommand/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
     depends_on = [
       null_resource.deploy
     ]
@@ -273,7 +273,7 @@ resource "aws_lambda_function" "process_slack_submission" {
    s3_key = "microservice/ProcessSlackSubmission/ProcessSlackSubmission.zip"
    memory_size = 3008
    timeout = 60
-   source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
+   //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
    depends_on = [
       null_resource.deploy
     ]
@@ -301,7 +301,7 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
     s3_key = "microservice/SlackDynamicDataSource/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
     depends_on = [
       null_resource.deploy
     ]
@@ -396,4 +396,44 @@ resource "aws_sns_topic" "sns_submission" {
   }
 }
 EOF
+}
+
+resource "aws_sqs_queue" "submission_dlq" {
+  name = "submission_dlq"
+}
+
+resource "aws_sqs_queue" "submission_queue" {
+  name                       = "submission_queue"
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.submission_dlq.arn}\",\"maxReceiveCount\":5}"
+  visibility_timeout_seconds = 300
+}
+
+resource "aws_sns_topic_subscription" "submission_subscription" {
+  topic_arn            = "self-service-submission"
+  protocol             = "sqs"
+  endpoint             = aws_sqs_queue.submission_queue.arn
+}
+
+resource "aws_sqs_queue_policy" "order_placed_queue_policy" {
+  queue_url = aws_sqs_queue.submission_queue.id
+  policy    = data.submission_queue_iam_policy.json
+}
+
+data "aws_iam_policy_document" "submission_queue_iam_policy" {
+  policy_id = "SQSSendAccess"
+  statement {
+    sid       = "SQSSendAccessStatement"
+    effect    = "Allow"
+    actions   = ["SQS:SendMessage"]
+    resources = [aws_sqs_queue.submission_queue.arn]
+    principals {
+      identifiers = ["*"]
+      type        = "*"
+    }
+    condition {
+      test     = "ArnEquals"
+      values   = [data.aws_sns_topic.sns_submission.arn]
+      variable = "aws:SourceArn"
+    }
+  }
 }
