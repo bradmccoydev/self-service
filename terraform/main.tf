@@ -472,7 +472,7 @@ resource "aws_sns_topic_subscription" "submission_subscription" {
 
 resource "aws_sqs_queue_policy" "submisison_queue_policy" {
   queue_url = aws_sqs_queue.submission_queue.id
-  policy    = aws_iam_policy_document.submission_queue_iam_policy.json
+  policy    = data.aws_iam_policy_document.submission_queue_iam_policy.json
 }
 
 data "aws_iam_policy_document" "submission_queue_iam_policy" {
@@ -495,8 +495,38 @@ data "aws_iam_policy_document" "submission_queue_iam_policy" {
 }
 
 resource "aws_lambda_event_source_mapping" "submission_event_source_mapping" {
-  batch_size        = 1other
+  batch_size        = 1
   event_source_arn  = aws_sqs_queue.submission_queue.arn
   enabled           = false
   function_name     = aws_lambda_function.endpoint_service.arn
+}
+
+resource "aws_kms_key" "athena_kms_key" {
+  deletion_window_in_days = 7
+  description             = "Athena KMS Key"
+}
+
+resource "aws_athena_workgroup" "athena_workgroup" {
+  name = "athena_workgroup"
+
+  configuration {
+    result_configuration {
+      encryption_configuration {
+        encryption_option = "SSE_KMS"
+        kms_key_arn       = aws_kms_key.athena_kms_key.arn
+      }
+    }
+  }
+}
+
+resource "aws_athena_database" "athena_logs" {
+  name   = "logs"
+  bucket = aws_s3_bucket.terraform_state.id
+}
+
+resource "aws_athena_named_query" "athena_query" {
+  name      = "query"
+  workgroup = aws_athena_workgroup.athena_workgroup.id
+  database  = aws_athena_database.athena_logs.name
+  query     = "SELECT * FROM ${aws_athena_database.athena_logs.name} limit 10;"
 }
