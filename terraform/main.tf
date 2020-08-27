@@ -319,6 +319,62 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
   retention_in_days = 7
 }
 
+resource "aws_lambda_function" "endpoint_service" {
+    function_name = "EndpointService"
+    description = "Endpoint Service"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/EndpointService/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/EndpointService/main.zip"
+    memory_size = 3008
+    timeout = 300
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/EndpointService/main.zip"))
+    depends_on = [
+      null_resource.deploy
+    ]
+    environment {
+      variables = {
+        secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
+      }
+   }
+}
+
+resource "aws_cloudwatch_log_group" "endpoint_service_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.endpoint_service.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_lambda_function" "logger_function" {
+    function_name = "Logger"
+    description = "Logger"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/Logger/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/Logger/main.zip"
+    memory_size = 3008
+    timeout = 300
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
+    depends_on = [
+      null_resource.deploy
+    ]
+    environment {
+      variables = {
+        secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
+      }
+   }
+}
+
+resource "aws_cloudwatch_log_group" "logger_function_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.logger_function.function_name}"
+  retention_in_days = 7
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # API
 # ---------------------------------------------------------------------------------------------------------------------
@@ -414,9 +470,9 @@ resource "aws_sns_topic_subscription" "submission_subscription" {
   endpoint             = aws_sqs_queue.submission_queue.arn
 }
 
-resource "aws_sqs_queue_policy" "order_placed_queue_policy" {
+resource "aws_sqs_queue_policy" "submisison_queue_policy" {
   queue_url = aws_sqs_queue.submission_queue.id
-  policy    = data.submission_queue_iam_policy.json
+  policy    = aws_iam_policy_document.submission_queue_iam_policy.json
 }
 
 data "aws_iam_policy_document" "submission_queue_iam_policy" {
@@ -432,8 +488,15 @@ data "aws_iam_policy_document" "submission_queue_iam_policy" {
     }
     condition {
       test     = "ArnEquals"
-      values   = [data.aws_sns_topic.sns_submission.arn]
+      values   = [aws_sns_topic.sns_submission.arn]
       variable = "aws:SourceArn"
     }
   }
+}
+
+resource "aws_lambda_event_source_mapping" "submission_event_source_mapping" {
+  batch_size        = 1other
+  event_source_arn  = aws_sqs_queue.submission_queue.arn
+  enabled           = false
+  function_name     = aws_lambda_function.endpoint_service.arn
 }
