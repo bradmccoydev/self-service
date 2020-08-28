@@ -44,12 +44,6 @@ namespace ProcessSlackSubmission
             var epochDateTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             var epoch = Convert.ToInt64((date - epochDateTime).TotalSeconds);
 
-
-            if (json.ToString().Contains("31391478-e1f8-42ca-93b7-5ffac77c3292"))
-            {
-                return "Lambda Warmed";
-            }
-
             var authorization = JsonConvert.DeserializeObject<Authorization.RootObject>(json.ToString());
 
 

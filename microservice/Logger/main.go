@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/csv"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	_ "github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 type Request struct {
@@ -21,30 +24,60 @@ type Request struct {
 }
 
 func Handler(request Request) (string, error) {
-	var data = [][]string{{"Line1", "Hello Readers of"}, {"Line2", "golangcode.com"}}
+	region := os.Getenv("region")
+	bucket := os.Getenv("bucket")
 
-	file, err := os.Create("result.csv")
-	checkError("Cannot create file", err)
-	defer file.Close()
+	const (
+		layoutISO = "2006-01-02T15:04:05+1100"
+		layoutUS  = "200601"
+	)
 
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
+	date := time.Now().Format(layoutISO)
+	folderName := fmt.Sprintf("/year=/month=/day=")
 
-	for _, value := range data {
-		err := writer.Write(value)
-		checkError("Cannot write to file", err)
-	}
+	fmt.Printf(folderName)
 
-	s, err := session.NewSession(&aws.Config{Region: aws.String("S3_REGION")})
+	//var folderName = $"/year={date.Year}/month={date.ToString("MM")}/day={date.ToString("dd")}";
+
+	filename := string(date)
+	fmt.Printf(string(date))
+
+	csv := `{"SuperHero Name", "Power", "Weakness"}`
+
+	reader := strings.NewReader(csv)
+
+	//https://stackoverflow.com/questions/47621804/upload-object-to-aws-s3-without-creating-a-file-using-aws-sdk-go
+
+	// dt.Columns.Add("id", typeof(String));
+	// dt.Columns.Add("command", typeof(String));
+	// dt.Columns.Add("user", typeof(String));
+	// dt.Columns.Add("team", typeof(String));
+	// dt.Columns.Add("channel", typeof(String));
+	// dt.Columns.Add("payload", typeof(String));
+	// dt.Columns.Add("status", typeof(String));
+	// dt.Columns.Add("date_time_unix", typeof(String));
+	// dt.Columns.Add("date_time_loaded_utc", typeof(String));
+	// dt.Columns.Add("tracking_id", typeof(String));
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region)})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Upload
-	err = AddFileToS3(s, "result.csv")
+	uploader := s3manager.NewUploader(sess)
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filename),
+		Body:   reader,
+	})
+
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Unable to upload %q to %q, %v", filename, bucket, err)
 	}
+
+	fmt.Printf("Successfully uploaded %q to %q\n", filename, bucket)
 
 	return "nil", nil
 }
@@ -88,16 +121,3 @@ func AddFileToS3(s *session.Session, fileDir string) error {
 	})
 	return err
 }
-
-//https://stackoverflow.com/questions/47621804/upload-object-to-aws-s3-without-creating-a-file-using-aws-sdk-go
-
-// dt.Columns.Add("id", typeof(String));
-// dt.Columns.Add("command", typeof(String));
-// dt.Columns.Add("user", typeof(String));
-// dt.Columns.Add("team", typeof(String));
-// dt.Columns.Add("channel", typeof(String));
-// dt.Columns.Add("payload", typeof(String));
-// dt.Columns.Add("status", typeof(String));
-// dt.Columns.Add("date_time_unix", typeof(String));
-// dt.Columns.Add("date_time_loaded_utc", typeof(String));
-// dt.Columns.Add("tracking_id", typeof(String));

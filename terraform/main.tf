@@ -355,15 +355,15 @@ resource "aws_lambda_function" "logger_function" {
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
     s3_key = "microservice/Logger/main.zip"
-    memory_size = 3008
+    memory_size = 512
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
     depends_on = [
       null_resource.deploy
     ]
     environment {
-      variables = {
-        secret_id = var.secret_id
+      variables = {}
+        bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
       }
