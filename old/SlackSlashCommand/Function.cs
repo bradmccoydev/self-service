@@ -96,7 +96,7 @@ namespace SlackSlashCommand
                 }
                 else
                 {
-                    return ":shelly: Wrong channel Please use temenos-self-service :shelly:";
+                    return ":shelly: Wrong channel Please use self-service :shelly:";
                 }
 
                 await logger.Log(
@@ -187,58 +187,6 @@ namespace SlackSlashCommand
                                 token: secrets.AuthToken,
                                 dialogJson: form,
                                 triggerId: slashCommand.body.TriggerId);
-
-                        var warmResponse = await lambdaServiceAccessor
-                           .InvokeLambdaFunction(
-                               accessKey: "",
-                               secretKey: "",
-                               sessionToken: "",
-                               region: region,
-                               functionName: "ProcessSlackSubmission",
-                               payload: "{\"warm\":\"31391478-e1f8-42ca-93b7-5ffac77c3292\"}",
-                               requestResponse: "false");
-
-                        await logger.Log(
-                            region: region,
-                            id: guid,
-                            trackingId: slashCommand.body.TriggerId,
-                            command: commandDetails.Command,
-                            user: slashCommand.body.UserName,
-                            team: slashCommand.body.TeamId,
-                            channel: channelName,
-                            payload: $"{commandDetails.Command} Requested",
-                            endpoint: (commandDetails.Endpoint == null) ? "" : commandDetails.Endpoint,
-                            approvers: new List<string>(),
-                            status: "Requested");
-                    }
-
-                    if (commandDetails.Endpoint.Contains("function")
-                        && commandDetails.Type != "dialog_submission")
-                    {
-                        var lambdaPayload = new LambdaPayload();
-                        lambdaPayload.ResponseUrl = slashCommand.body.ResponseUrl;
-                        lambdaPayload.SlackChannel = slashCommand.body.ChannelName;
-                        lambdaPayload.SlackUser = slashCommand.body.UserId;
-                        lambdaPayload.TrackingId = slashCommand.body.TriggerId;
-
-                        string payloadLambda = JsonConvert.SerializeObject(lambdaPayload);
-
-                        var lambdaName = utilities
-                            .GetStringAfterCharacter(
-                                value: commandDetails.Endpoint,
-                                character: "function:");
-
-                        var response = await lambdaServiceAccessor
-                            .InvokeLambdaFunction(
-                                accessKey: "",
-                                secretKey: "",
-                                sessionToken: "",
-                                region: region,
-                                functionName: lambdaName,
-                                payload: payloadLambda,
-                                requestResponse: "false");
-
-                        output = $"Lambda Response: {response}";     
                     }
 
                     if (commandDetails.Endpoint.Contains("stateMachine")
@@ -272,14 +220,6 @@ namespace SlackSlashCommand
 
                     if (commandDetails.Type == "block_action")
                     {
-                        // var block = slackServiceAccessor
-                        //     .BuildSlackMessageBlock(
-                        //         title: commandDetails.Description,
-                        //         callbackId: dialogSubmission.body.callback_id,
-                        //         greenActionName: ":heavy_check_mark: Confirm",
-                        //         redActionName: ":x: Cancel",
-                        //         payload: state.Dictionary);
-
                         var blockTs = await slackServiceAccessor
                            .SendMessageBlockAsync(
                                token: secrets.AuthToken,
@@ -304,38 +244,7 @@ namespace SlackSlashCommand
                 }
                 catch (Exception ex)
                 {
-                    if (slashCommand.body.ChannelName == "directmessage")
-                    {
-                        await slackServiceAccessor
-                            .SendCodeSnippetAsync(
-                                token: secrets.BotUserToken,
-                                channel: channelName,
-                                title: "",
-                                snippet: $"Your command didnt work: SlashCommand:{slashCommand.body.Command}-Response Url: {slashCommand.body.ResponseUrl} {x} Text: {slashCommand.body.Text} {x} User Id: {slashCommand.body.UserId} {x} UserName: {slashCommand.body.UserName} {x} TriggerId: {slashCommand.body.TriggerId} Ex - {ex}",
-                                user: "");
-                    }
-
-                    await slackServiceAccessor
-                        .SendSlackMessageAsync(
-                            url: slashCommand.body.ResponseUrl,
-                            token: "",
-                            channel: "avoka-cloud-logs",
-                            message: $"SlashCommand:{slashCommand.body.Command}-Response Url: {slashCommand.body.ResponseUrl} {x} Text: {slashCommand.body.Text} {x} User Id: {slashCommand.body.UserId} {x} UserName: {slashCommand.body.UserName} {x} TriggerId: {slashCommand.body.TriggerId} Ex - {ex}");
-
-                    await logger.Log(
-                            region: region,
-                            id: guid,
-                            trackingId: slashCommand.body.TriggerId,
-                            command: commandDetails.Command,
-                            user: slashCommand.body.UserName,
-                            team: slashCommand.body.TeamId,
-                            channel: channelName,
-                            payload: $"{slashCommand.body.UserName} - {ex}",
-                            endpoint: "",
-                            approvers: new List<string>(),
-                            status: "Error");
-
-
+                    Console.WriteLine(ex);
                 }
             }
             else
