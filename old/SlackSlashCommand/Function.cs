@@ -33,8 +33,6 @@ namespace SlackSlashCommand
             var daxUrl = "Environment.GetEnvironmentVariable()";
             int daxPort = 0;
 
-
-
             var secrets = await secretsManagerServiceAccessor
                 .GetApplicationSecrets(
                     region: region,

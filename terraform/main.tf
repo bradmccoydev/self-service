@@ -175,6 +175,14 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Resource": [
                 "${aws_s3_bucket.terraform_state.arn}"
             ]
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": "sqs:*",
+            "Resource": [
+                "${aws_sqs_queue.submission_queue.arn}"
+            ]
         }
     ]
 }
@@ -235,8 +243,8 @@ EOF
 # Lambda
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "slack_slash_command" {
-    function_name = "SlackSlashCommand"
+resource "aws_lambda_function" "slack_slash_command_staging" {
+    function_name = "SlackSlashCommand-Staging"
     description = "Slack Slash Command"
     role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/SlackSlashCommand/main"
@@ -245,7 +253,7 @@ resource "aws_lambda_function" "slack_slash_command" {
     s3_key = "microservice/SlackSlashCommand/main.zip"
     memory_size = 3008
     timeout = 300
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
     depends_on = [
       null_resource.deploy
     ]
@@ -257,6 +265,31 @@ resource "aws_lambda_function" "slack_slash_command" {
       }
     }
 }
+
+resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
+  name              = "/aws/lambda/${aws_lambda_function.slack_slash_command_staging.function_name}"
+  retention_in_days = 7
+}
+
+ resource "aws_lambda_function" "slack_slash_command" {
+   function_name = "SlackSlashCommand"
+   description = "Slack Slash Command"
+   role          = aws_iam_role.self_service_role.arn
+   handler       = "SlackSlashCommand::SlackSlashCommand.Function::FunctionHandler"
+   runtime       = "dotnetcore2.1"
+   s3_bucket = var.application_s3_bucket
+   s3_key = "microservice/ProcessSlackSubmission/ProcessSlackSubmission.zip"
+   memory_size = 3008
+   timeout = 60
+   source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+   environment {
+    variables = {
+      secret_id = var.secret_id
+      region = var.aws_region
+      environment = var.environment
+    }
+   }
+  }  
 
 resource "aws_cloudwatch_log_group" "slack_slash_command_logs" {
   name              = "/aws/lambda/${aws_lambda_function.slack_slash_command.function_name}"
@@ -358,11 +391,8 @@ resource "aws_lambda_function" "logger_function" {
     memory_size = 512
     timeout = 300
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
-    depends_on = [
-      null_resource.deploy
-    ]
     environment {
-      variables = {}
+      variables = {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
@@ -459,15 +489,22 @@ resource "aws_sqs_queue" "submission_dlq" {
 }
 
 resource "aws_sqs_queue" "submission_queue" {
-  name                       = "submission_queue"
-  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.submission_dlq.arn}\",\"maxReceiveCount\":5}"
+  name                  = "submission_queue"
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.submission_dlq.arn
+    maxReceiveCount     = 4
+  })
   visibility_timeout_seconds = 300
+  tags     = var.tags
 }
 
 resource "aws_sns_topic_subscription" "submission_subscription" {
-  topic_arn            = "self-service-submission"
+  topic_arn            = aws_sns_topic.sns_submission.arn
   protocol             = "sqs"
   endpoint             = aws_sqs_queue.submission_queue.arn
+  depends_on = [
+    aws_sqs_queue.submission_queue
+  ]
 }
 
 resource "aws_sqs_queue_policy" "submisison_queue_policy" {
