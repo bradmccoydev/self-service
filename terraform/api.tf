@@ -15,6 +15,7 @@ data "template_file" api_swagger{
   template = file("./swagger.yaml")
 
   vars = {
+    Slack = aws_lambda_function.slack_slash_command_staging.invoke_arn
     SlackSlashCommand = aws_lambda_function.slack_slash_command.invoke_arn
     ProcessSlackSubmission = aws_lambda_function.process_slack_submission.invoke_arn
     SlackDynamicDataSource = aws_lambda_function.slack_dynamic_data_source.invoke_arn

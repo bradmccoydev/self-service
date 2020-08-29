@@ -122,6 +122,67 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws"
+  /slack:
+    post:
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      x-amazon-apigateway-integration:
+        uri: ${Slack}
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/x-www-form-urlencoded: "## convert HTML POST data or HTTP GET\
+            \ query string to JSON\r\n \r\n## get the raw post data from the AWS built-in\
+            \ variable and give it a nicer name\r\n#if ($context.httpMethod == \"\
+            POST\")\r\n #set($rawAPIData = $input.path(\"$\"))\r\n#elseif ($context.httpMethod\
+            \ == \"GET\")\r\n #set($rawAPIData = $input.params().querystring)\r\n\
+            \ #set($rawAPIData = $rawAPIData.toString())\r\n #set($rawAPIDataLength\
+            \ = $rawAPIData.length() - 1)\r\n #set($rawAPIData = $rawAPIData.substring(1,\
+            \ $rawAPIDataLength))\r\n #set($rawAPIData = $rawAPIData.replace(\", \"\
+            , \"&\"))\r\n\r\n#else\r\n #set($rawAPIData = \"\")\r\n#end\r\n \r\n##\
+            \ Work around for Slack's stupidity:\r\n#set($rawAPIData = $rawAPIData.replace(\"\
+            %26amp%3B\", \"%26\"))\r\n#set($rawAPIData = $rawAPIData.replace(\"%26gt%3B\"\
+            , \"%3C\"))\r\n#set($rawAPIData = $rawAPIData.replace(\"%26lt%3B\", \"\
+            %3E\"))\r\n \r\n## first we get the number of \"&\" in the string, this\
+            \ tells us if there is more than one key value pair\r\n#set($countAmpersands\
+            \ = $rawAPIData.length() - $rawAPIData.replace(\"&\", \"\").length())\r\
+            \n \r\n## if there are no \"&\" at all then we have only one key value\
+            \ pair.\r\n## we append an ampersand to the string so that we can tokenise\
+            \ it the same way as multiple kv pairs.\r\n## the \"empty\" kv pair to\
+            \ the right of the ampersand will be ignored anyway.\r\n#if ($countAmpersands\
+            \ == 0)\r\n #set($rawPostData = $rawAPIData + \"&\")\r\n#end\r\n \r\n\
+            ## now we tokenise using the ampersand(s)\r\n#set($tokenisedAmpersand\
+            \ = $rawAPIData.split(\"&\"))\r\n \r\n## we set up a variable to hold\
+            \ the valid key value pairs\r\n#set($tokenisedEquals = [])\r\n \r\n##\
+            \ now we set up a loop to find the valid key value pairs, which must contain\
+            \ only one \"=\"\r\n#foreach( $kvPair in $tokenisedAmpersand )\r\n #set($countEquals\
+            \ = $kvPair.length() - $kvPair.replace(\"=\", \"\").length())\r\n #if\
+            \ ($countEquals == 1)\r\n  #set($kvTokenised = $kvPair.split(\"=\"))\r\
+            \n    #if ( ($kvTokenised.size() == 2) && ($kvTokenised[0].length() >\
+            \ 0) )\r\n   ## we found a valid key value pair. add it to the list.\r\
+            \n   #set($devNull = $tokenisedEquals.add($kvPair))\r\n  #end\r\n #end\r\
+            \n#end\r\n \r\n## next we set up our loop inside the output structure\
+            \ \"{\" and \"}\"\r\n{\r\n    \"body\": {\r\n    #foreach( $kvPair in\
+            \ $tokenisedEquals )\r\n      ## finally we output the JSON for this pair\
+            \ and append a comma if this isn't the last pair\r\n      #set($kvTokenised\
+            \ = $kvPair.split(\"=\"))\r\n     \"$util.urlDecode($kvTokenised[0])\"\
+            \ : #if($kvTokenised.size() > 1 && $kvTokenised[1].length() > 0)\"$util.urlDecode($kvTokenised[1])\"\
+            #{else}\"\"#end#if( $foreach.hasNext ),#end\r\n    #end\r\n},\r\n  \"\
+            headers\": {\r\n    #foreach($param in $input.params().header.keySet())\r\
+            \n    \"$param\": \"$util.escapeJavaScript($input.params().header.get($param))\"\
+            \ #if($foreach.hasNext),#end\r\n    \r\n    #end  \r\n  }\r\n}"
+        passthroughBehavior: "never"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws"
 definitions:
   Empty:
     type: "object"

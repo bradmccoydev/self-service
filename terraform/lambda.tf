@@ -1,5 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Lambda
+# Note: If you want to update lambda uncomment source_code_hash this will force code update
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "slack_slash_command_staging" {
@@ -112,7 +113,7 @@ resource "aws_lambda_function" "endpoint_service" {
     s3_key = "microservice/EndpointService/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/EndpointService/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/EndpointService/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
@@ -144,7 +145,7 @@ resource "aws_lambda_function" "logger_function" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 512
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket
