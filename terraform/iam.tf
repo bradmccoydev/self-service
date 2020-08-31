@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# IAM
+# Lambda Execution Role
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "self_service_role" {
@@ -105,6 +105,10 @@ resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
   policy_arn = aws_iam_policy.self_service_lambda_execution_policy.arn
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Cloudwatch Role
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_iam_role" "cloudwatch" {
   name = "api_gateway_cloudwatch_global"
   assume_role_policy = <<EOF
@@ -148,4 +152,51 @@ resource "aws_iam_role_policy" "cloudwatch" {
     ]
 }
 EOF
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# State Machine
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_iam_policy" "self_service_state_execution_policy" {
+  name        = "SelfServiceStateExecutionPolicy"
+  description = "Step Function Execution Policy"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role" "state_execution_role" {
+  name = "SelfServiceStateExecutionRole"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "states.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+  tags     = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "self_service_state_execution_role_policy_attachment" {
+  role       = aws_iam_role.state_execution_role.name
+  policy_arn = aws_iam_policy.self_service_state_execution_policy.arn
 }
