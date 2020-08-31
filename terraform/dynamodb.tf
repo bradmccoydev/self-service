@@ -18,6 +18,17 @@ resource "aws_dynamodb_table" "command" {
   }
 }
 
+resource "aws_dynamodb_table" "job" {
+  name           = "job"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  tags = var.tags
+    attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
 resource "aws_dynamodb_table" "submission" {
   name           = "submission"
   billing_mode   = "PAY_PER_REQUEST"
