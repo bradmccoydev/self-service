@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/sns"
 )
 
 type Request struct {
@@ -61,9 +63,18 @@ type Secrets struct {
 	SigningSecret string `json:"SigningSecret"`
 }
 
+type Message struct {
+	Default string `json:"default"`
+}
+
+type Person struct {
+	Name string `json:"name"`
+}
+
 func Handler(request Request) (string, error) {
 	secretName := os.Getenv("secret_id")
 	region := os.Getenv("region")
+	snsTopicArn := os.Getenv("sns_topic_arn")
 
 	svc := secretsmanager.New(session.New(),
 		aws.NewConfig().WithRegion(region))
@@ -161,7 +172,7 @@ func Handler(request Request) (string, error) {
 
 	if request.Headers.XSlackSignature != "v0="+sha {
 		fmt.Println("Signature Did Not Match")
-		return "User not authorised", nil
+		//return "User not authorised", nil
 	}
 
 	fmt.Printf("****")
@@ -170,6 +181,34 @@ func Handler(request Request) (string, error) {
 	str := strconv.FormatInt(currentTime, 10)
 	fmt.Println(currentTime)
 	fmt.Println(str)
+
+	snsClient := sns.New(session.New(),
+		aws.NewConfig().WithRegion(region))
+
+	person := Person{
+		Name: "Brad McCoy",
+	}
+	personStr, _ := json.Marshal(person)
+
+	message := Message{
+		Default: string(personStr),
+	}
+	messageBytes, _ := json.Marshal(message)
+	messageStr := string(messageBytes)
+
+	params := &sns.PublishInput{
+		TopicArn:         aws.String(snsTopicArn),
+		Message:          aws.String(messageStr),
+		MessageStructure: aws.String("json"),
+	}
+
+	resp, err := snsClient.Publish(params)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print(resp)
 
 	return "Thanks for executing the slash command", nil
 }

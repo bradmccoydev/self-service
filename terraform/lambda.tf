@@ -19,6 +19,7 @@ resource "aws_lambda_function" "slack_slash_command_staging" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
+        sns_topic_arn = aws_sns_topic.sns_submission.arn
       }
     }
 }
@@ -44,6 +45,7 @@ resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
       secret_id = var.secret_id
       region = var.aws_region
       environment = var.environment
+      sns_topic_arn = aws_sns_topic.sns_submission.arn
     }
    }
   }  
@@ -69,6 +71,7 @@ resource "aws_lambda_function" "process_slack_submission" {
       secret_id = var.secret_id
       region = var.aws_region
       environment = var.environment
+      sns_topic_arn = aws_sns_topic.sns_submission.arn
     }
    }
 }
@@ -94,6 +97,7 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
+        sns_topic_arn = aws_sns_topic.sns_submission.arn
       }
    }
 }
@@ -119,6 +123,7 @@ resource "aws_lambda_function" "endpoint_service" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
+        sns_topic_arn = aws_sns_topic.sns_submission.arn
       }
    }
 }

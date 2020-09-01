@@ -100,6 +100,126 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
 EOF
 }
 
+resource "aws_iam_user" "developer" {
+  name = "developer"
+  path = "/system/"
+
+  tags = {
+    environment = "Dev"
+  }
+}
+
+resource "aws_iam_access_key" "developer_iam" {
+  user = aws_iam_user.developer.name
+}
+
+resource "aws_iam_policy" "developer_policy" {
+  name        = "DeveloperPolicy"
+  description = "Developer Policy"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
+            ],
+            "Resource": [
+                "${aws_secretsmanager_secret.app_secret.arn}"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "sns:*",
+                "lambda:*",
+                "sqs:*"
+            ],
+            "Resource": [
+                "${aws_sns_topic.sns_submission.arn}",
+                "${aws_lambda_function.slack_slash_command_staging.arn}",
+                "${aws_lambda_function.slack_slash_command.arn}",
+                "${aws_lambda_function.process_slack_submission.arn}",
+                "${aws_sqs_queue.submission_queue.arn}"
+            ]
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": [
+                "sns:ListTopics",
+                "sns:CreatePlatformEndpoint",
+                "sns:Unsubscribe",
+                "lambda:GetAccountSettings",
+                "lambda:CreateEventSourceMapping",
+                "sns:CheckIfPhoneNumberIsOptedOut",
+                "sns:OptInPhoneNumber",
+                "sns:SetEndpointAttributes",
+                "sns:ListEndpointsByPlatformApplication",
+                "sns:DeletePlatformApplication",
+                "sns:SetPlatformApplicationAttributes",
+                "lambda:ListLayerVersions",
+                "lambda:ListLayers",
+                "sqs:ListQueues",
+                "lambda:ListFunctions",
+                "sns:CreatePlatformApplication",
+                "sns:SetSMSAttributes",
+                "sns:GetPlatformApplicationAttributes",
+                "sns:GetSubscriptionAttributes",
+                "sns:ListSubscriptions",
+                "sns:DeleteEndpoint",
+                "sns:ListPhoneNumbersOptedOut",
+                "sns:GetEndpointAttributes",
+                "sns:SetSubscriptionAttributes",
+                "lambda:ListEventSourceMappings",
+                "sns:ListPlatformApplications",
+                "sns:GetSMSAttributes"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": [
+                "${aws_dynamodb_table.command.arn}",
+                "${aws_dynamodb_table.command.arn}/*",
+                "${aws_dynamodb_table.submission.arn}",
+                "${aws_dynamodb_table.submission.arn}/*",
+                "${aws_dynamodb_table.job.arn}",
+                "${aws_dynamodb_table.job.arn}/*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "${aws_s3_bucket.terraform_state.arn}"
+            ]
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": "sqs:*",
+            "Resource": [
+                "${aws_sqs_queue.submission_queue.arn}"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_user_policy_attachment" "developer_role_attachment" {
+  user       = aws_iam_user.developer.name
+  policy_arn = aws_iam_policy.developer_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "SelfServiceRolePolicyAttachment" {
   role       = aws_iam_role.self_service_role.name
   policy_arn = aws_iam_policy.self_service_lambda_execution_policy.arn
