@@ -2,14 +2,14 @@
 # DynamoDB
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_dynamodb_table" "command" {
-  name           = "command"
+resource "aws_dynamodb_table" "service" {
+  name           = "service"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "command"
+  hash_key       = "service"
   range_key      = "team"
   tags = var.tags
     attribute {
-    name = "command"
+    name = "service"
     type = "S"
   }
     attribute {
@@ -46,9 +46,9 @@ resource "aws_dynamodb_table" "submission" {
 }
 
 resource "aws_dynamodb_table_item" "admin" {
-  table_name = aws_dynamodb_table.command.name
-  hash_key   = aws_dynamodb_table.command.hash_key
-  range_key = aws_dynamodb_table.command.range_key
+  table_name = aws_dynamodb_table.service.name
+  hash_key   = aws_dynamodb_table.service.hash_key
+  range_key = aws_dynamodb_table.service.range_key
 
   item = <<ITEM
 {
@@ -79,7 +79,7 @@ resource "aws_dynamodb_table_item" "admin" {
   "canary_deployment": {
     "S": "false"
   },
-  "command": {
+  "service": {
     "S": "admin"
   },
   "created_by": {

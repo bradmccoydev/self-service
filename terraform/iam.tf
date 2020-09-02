@@ -73,8 +73,8 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "${aws_dynamodb_table.command.arn}",
-                "${aws_dynamodb_table.command.arn}/*",
+                "${aws_dynamodb_table.service.arn}",
+                "${aws_dynamodb_table.service.arn}/*",
                 "${aws_dynamodb_table.submission.arn}",
                 "${aws_dynamodb_table.submission.arn}/*"
             ]
@@ -144,6 +144,7 @@ resource "aws_iam_policy" "developer_policy" {
                 "${aws_lambda_function.slack_slash_command_staging.arn}",
                 "${aws_lambda_function.slack_slash_command.arn}",
                 "${aws_lambda_function.process_slack_submission.arn}",
+                "${aws_lambda_function.service_invoker.arn}",
                 "${aws_sqs_queue.submission_queue.arn}"
             ]
         },
@@ -186,8 +187,8 @@ resource "aws_iam_policy" "developer_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "${aws_dynamodb_table.command.arn}",
-                "${aws_dynamodb_table.command.arn}/*",
+                "${aws_dynamodb_table.service.arn}",
+                "${aws_dynamodb_table.service.arn}/*",
                 "${aws_dynamodb_table.submission.arn}",
                 "${aws_dynamodb_table.submission.arn}/*",
                 "${aws_dynamodb_table.job.arn}",

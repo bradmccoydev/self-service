@@ -107,17 +107,17 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
   retention_in_days = 7
 }
 
-resource "aws_lambda_function" "endpoint_service" {
-    function_name = "EndpointService"
-    description = "Endpoint Service"
+resource "aws_lambda_function" "service_invoker" {
+    function_name = "ServiceInvoker"
+    description = "Endpoint Service Invoker"
     role          = aws_iam_role.self_service_role.arn
-    handler       = "build/microservice/EndpointService/main"
+    handler       = "build/microservice/ServiceInvoker/main"
     runtime       = "go1.x"
     s3_bucket = var.application_s3_bucket
-    s3_key = "microservice/EndpointService/main.zip"
+    s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 3008
     timeout = 300
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/EndpointService/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
@@ -132,11 +132,11 @@ resource "aws_lambda_event_source_mapping" "submission_event_source_mapping" {
   batch_size        = 1
   event_source_arn  = aws_sqs_queue.submission_queue.arn
   enabled           = false
-  function_name     = aws_lambda_function.endpoint_service.arn
+  function_name     = aws_lambda_function.service_invoker.arn
 }
 
-resource "aws_cloudwatch_log_group" "endpoint_service_logs" {
-  name              = "/aws/lambda/${aws_lambda_function.endpoint_service.function_name}"
+resource "aws_cloudwatch_log_group" "service_invoker_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.service_invoker.function_name}"
   retention_in_days = 7
 }
 
