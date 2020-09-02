@@ -121,7 +121,7 @@ resource "aws_iam_policy" "developer_policy" {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "VisualEditor0",
+            "Sid": "SecretsManager",
             "Effect": "Allow",
             "Action": [
                 "secretsmanager:GetSecretValue",
@@ -195,7 +195,7 @@ resource "aws_iam_policy" "developer_policy" {
             ]
         },
         {
-            "Sid": "VisualEditor3",
+            "Sid": "S3Buckets",
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
@@ -203,7 +203,7 @@ resource "aws_iam_policy" "developer_policy" {
             ]
         },
         {
-            "Sid": "VisualEditor4",
+            "Sid": "SqsQueues",
             "Effect": "Allow",
             "Action": "sqs:*",
             "Resource": [
