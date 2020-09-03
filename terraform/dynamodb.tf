@@ -6,14 +6,9 @@ resource "aws_dynamodb_table" "service" {
   name           = "service"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "service"
-  range_key      = "team"
   tags = var.tags
     attribute {
     name = "service"
-    type = "S"
-  }
-    attribute {
-    name = "team"
     type = "S"
   }
 }
@@ -29,18 +24,13 @@ resource "aws_dynamodb_table" "job" {
   }
 }
 
-resource "aws_dynamodb_table" "submission" {
-  name           = "submission"
+resource "aws_dynamodb_table" "event" {
+  name           = "event"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
-  range_key      = "team"
   tags = var.tags
     attribute {
     name = "id"
-    type = "S"
-  }
-    attribute {
-    name = "team"
     type = "S"
   }
 }
@@ -57,27 +47,25 @@ resource "aws_dynamodb_table_item" "admin" {
   },
   "approver_groups": {
     "SS": [
-      "cloudhosting"
+      "admin"
     ]
   },
   "approver_users": {
     "SS": [
-      "U03NH6RJK",
-      "UHEVC2LGM"
+      "brad.mccoy@cevo.com.au",
+      "brad.mccoy@davidjones.com.au"
     ]
   },
   "authorised_groups": {
     "SS": [
-      "cloudhosting"
+      "daas"
     ]
   },
   "authorised_users": {
     "SS": [
-      "brad.mccoy@cevo.com.au"
+      "brad.mccoy@cevo.com.au",
+      "brad.mccoy@davidjones.com.au"
     ]
-  },
-  "canary_deployment": {
-    "S": "false"
   },
   "service": {
     "S": "admin"
@@ -86,7 +74,7 @@ resource "aws_dynamodb_table_item" "admin" {
     "S": "brad.mccoy@cevo.com.au"
   },
   "created_date": {
-    "S": "2019-10-27T01:29:41.617Z"
+    "S": "2020-08-03T01:29:41.617Z"
   },
   "description": {
     "S": "This Is The Admin Console for adding users to commands etc"
