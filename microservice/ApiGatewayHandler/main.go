@@ -158,7 +158,7 @@ func getCommandDetails(cmd string) (dynamoItem, error) {
 	svc := dynamodb.New(sess)
 
 	// Perform DynamoDB table scan
-	tableName := "command-production"
+	tableName := "service"
 	resp, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{

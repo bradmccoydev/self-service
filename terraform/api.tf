@@ -19,6 +19,7 @@ data "template_file" api_swagger{
     SlackSlashCommand = aws_lambda_function.slack_slash_command.invoke_arn
     ProcessSlackSubmission = aws_lambda_function.process_slack_submission.invoke_arn
     SlackDynamicDataSource = aws_lambda_function.slack_dynamic_data_source.invoke_arn
+    ApiGatewayHandler = aws_lambda_function.api_gateway_handler.invoke_arn
   }
 }
 
@@ -47,6 +48,14 @@ resource "aws_lambda_permission" "apigw_permission_dynamic_data_source" {
    statement_id  = "AllowAPIGatewayInvoke"
    action        = "lambda:InvokeFunction"
    function_name = aws_lambda_function.slack_dynamic_data_source.function_name
+   principal     = "apigateway.amazonaws.com"
+   source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_permission_api_gateway_handler" {
+   statement_id  = "AllowAPIGatewayInvoke"
+   action        = "lambda:InvokeFunction"
+   function_name = aws_lambda_function.api_gateway_handler.function_name
    principal     = "apigateway.amazonaws.com"
    source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
 }

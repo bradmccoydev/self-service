@@ -164,3 +164,28 @@ resource "aws_cloudwatch_log_group" "logger_function_logs" {
   name              = "/aws/lambda/${aws_lambda_function.logger_function.function_name}"
   retention_in_days = 7
 }
+
+resource "aws_lambda_function" "api_gateway_handler" {
+    function_name = "ApiGatewayHandler"
+    description = "Api Gateway Handler"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/ApiGatewayHandler/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/ApiGatewayHandler/main.zip"
+    memory_size = 512
+    timeout = 300
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApiGatewayHandler/main.zip"))
+    environment {
+      variables = {
+        bucket = var.application_s3_bucket
+        region = var.aws_region
+        environment = var.environment
+      }
+   }
+}
+
+resource "aws_cloudwatch_log_group" "api_gateway_handler_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.api_gateway_handler.function_name}"
+  retention_in_days = 7
+}
