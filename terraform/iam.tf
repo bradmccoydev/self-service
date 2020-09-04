@@ -298,6 +298,62 @@ resource "aws_iam_policy" "self_service_state_execution_policy" {
 EOF
 }
 
+resource "aws_iam_role" "slack_role" {
+  name = "SlackRole"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "lambda.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::${var.aws_account_id}:root"
+        ]
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {}
+    }
+  ]
+}
+EOF
+  tags = var.tags
+}
+
+resource "aws_iam_policy" "self_service_api_invoke_policy" {
+  name        = "SelfServiceApiInvokePolicy"
+  description = "Permission To Invoke API"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "execute-api:Invoke",
+                "execute-api:InvalidateCache"
+            ],
+            "Resource": "${aws_api_gateway_rest_api.api_gateway.arn}"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "slack_api_gateway_role_policy_attachment" {
+  role       = aws_iam_role.slack_role.name
+  policy_arn = aws_iam_policy.self_service_api_invoke_policy.arn
+}
+
 resource "aws_iam_role" "state_execution_role" {
   name = "SelfServiceStateExecutionRole"
   assume_role_policy = <<EOF

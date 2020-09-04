@@ -117,7 +117,7 @@ resource "aws_lambda_function" "service_invoker" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 3008
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
@@ -175,7 +175,7 @@ resource "aws_lambda_function" "api_gateway_handler" {
     s3_key = "microservice/ApiGatewayHandler/main.zip"
     memory_size = 512
     timeout = 300
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApiGatewayHandler/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApiGatewayHandler/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket
