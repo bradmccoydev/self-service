@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# API
+# Slack API
 # ---------------------------------------------------------------------------------------------------------------------
 resource "aws_api_gateway_account" "api_gw_account" {
   cloudwatch_role_arn = aws_iam_role.cloudwatch.arn
@@ -59,3 +59,7 @@ resource "aws_lambda_permission" "apigw_permission_api_gateway_handler" {
    principal     = "apigateway.amazonaws.com"
    source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*/*"
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Master API
+# ---------------------------------------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_cloudwatch_event_rule" "framework_test" {
-    name = "Framework Daily Test"
+    name = "framework-daily-test"
     description = "Daily Test of Framework"
     schedule_expression = "rate(1 day)"
 }
@@ -14,12 +14,9 @@ resource "aws_cloudwatch_event_target" "framework_test" {
     arn = "${aws_lambda_function.scheduler.arn}"
     input = <<DOC
     {
-      "containerOverrides": [
-        {
-          "name": "name-of-container-to-override",
-          "command": ["bin/console", "scheduled-task"]
-        }
-      ]
+        "service_id": "test",
+        "version": "1",
+        "command": ["bin/console", "scheduled-task"]
     }
     DOC
 }

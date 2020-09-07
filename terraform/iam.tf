@@ -190,9 +190,7 @@ resource "aws_iam_policy" "developer_policy" {
                 "${aws_dynamodb_table.service.arn}",
                 "${aws_dynamodb_table.service.arn}/*",
                 "${aws_dynamodb_table.event.arn}",
-                "${aws_dynamodb_table.event.arn}/*",
-                "${aws_dynamodb_table.job.arn}",
-                "${aws_dynamodb_table.job.arn}/*"
+                "${aws_dynamodb_table.event.arn}/*"
             ]
         },
         {

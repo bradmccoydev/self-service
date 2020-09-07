@@ -236,6 +236,8 @@ resource "aws_lambda_function" "scheduler" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
+        service_table = aws_dynamodb_table.service.name
+        event_table = aws_dynamodb_table.event.name
       }
    }
 }
