@@ -123,7 +123,7 @@ resource "aws_lambda_function" "service_invoker" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
@@ -220,6 +220,7 @@ resource "aws_lambda_function" "scheduler" {
         environment = var.environment
         service_table = aws_dynamodb_table.service.name
         event_table = aws_dynamodb_table.event.name
+        master_api_id = aws_api_gateway_rest_api.api_gateway_master.id
       }
    }
 }

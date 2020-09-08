@@ -100,6 +100,11 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
 EOF
 }
 
+resource "aws_iam_role_policy_attachment" "self_service_api_invoke_attachment" {
+  role       = aws_iam_role.self_service_role.name
+  policy_arn = aws_iam_policy.self_service_api_invoke_policy.arn
+}
+
 resource "aws_iam_user" "developer" {
   name = "developer"
   path = "/"
@@ -341,8 +346,10 @@ resource "aws_iam_policy" "self_service_api_invoke_policy" {
                 "execute-api:InvalidateCache"
             ],
             "Resource":[
-               "${aws_api_gateway_rest_api.api_gateway.arn}",
-               "${aws_api_gateway_rest_api.api_gateway_master.arn}"
+               "${aws_api_gateway_rest_api.api_gateway.arn}/*",
+               "${aws_api_gateway_rest_api.api_gateway_master.arn}/*",
+               "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/POST/invokeService",
+               "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/*/*/*"
             ]
         }
     ]

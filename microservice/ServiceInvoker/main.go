@@ -62,7 +62,7 @@ func Handler(request Request) (string, error) {
 		"Schedule",
 		"Log",
 		"2020-09-15",
-		service.Service+" scheduled",
+		service.Service+" invoked",
 		eventTable)
 
 	fmt.Printf("Do Logic")
@@ -72,10 +72,10 @@ func Handler(request Request) (string, error) {
 		initalTime,
 		service.Service,
 		service.Version,
-		"API Request Sent",
+		"Service Executed",
 		"Log",
 		"2020-09-08",
-		"API GW Request Sent",
+		"Service Request Sent",
 		eventTable)
 
 	return "working", nil

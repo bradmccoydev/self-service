@@ -2,15 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -45,11 +47,9 @@ type Event struct {
 func Handler(request Request) (string, error) {
 	serviceTable := os.Getenv("service_table")
 	eventTable := os.Getenv("event_table")
-
-	fmt.Printf(serviceTable)
-	fmt.Printf(eventTable)
-	fmt.Printf(request.ServiceID)
-	fmt.Printf(request.ServiceVersion)
+	region := os.Getenv("region")
+	masterAPIID := os.Getenv("master_api_id")
+	environment := os.Getenv("environment")
 
 	if request.ServiceID == "" {
 		fmt.Printf("No service ID provided")
@@ -74,39 +74,92 @@ func Handler(request Request) (string, error) {
 		service.Service+" scheduled",
 		eventTable)
 
-	cfg, err := external.LoadDefaultAWSConfig(
-		external.WithSharedConfigProfile(profile),
-	)
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-		fmt.Println("unable to create an AWS session for the provided profile")
-		return
+		panic("unable to load SDK config, " + err.Error())
 	}
 
-	URL := "https://api.pagerduty.com/incidents"
+	cfg.Region = region
+	ctx := context.Background()
 
-	var requestJSON = []byte(fmt.Sprintf(`{"service":"%v","version":"%v}`, service.Service, service.Version))
+	if err != nil {
+		fmt.Println("unable to create an AWS session for the provided profile")
+		LogEvent(
+			GetUnixTimestamp(),
+			initalTime,
+			service.Service,
+			service.Version,
+			"AWS Credentials Error",
+			"Error",
+			"2020-09-09",
+			err.Error(),
+			eventTable)
+		return "error", nil
+	}
+
+	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService", masterAPIID, region, environment)
+
+	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v}`, service.Service, service.Version))
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
 	req = req.WithContext(ctx)
-	signer := v4.NewSigner(cfg.Credentials)
+	signer := v4.NewSigner(sess.Config.Credentials)
+	//signer := v4.NewSigner(cfg.Credentials)
 	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
 	if err != nil {
+		LogEvent(
+			GetUnixTimestamp(),
+			initalTime,
+			service.Service,
+			service.Version,
+			"API Error",
+			"Error",
+			"2020-09-09",
+			err.Error(),
+			eventTable)
 		fmt.Printf("failed to sign request: (%v)\n", err)
-		return
+		return "error", nil
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		LogEvent(
+			GetUnixTimestamp(),
+			initalTime,
+			service.Service,
+			service.Version,
+			"API Request Sent",
+			"Error",
+			"2020-09-08",
+			err.Error(),
+			eventTable)
 		fmt.Printf("failed to call remote service: (%v)\n", err)
-		return
+		return "error", nil
 	}
 
 	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Println("response Body:", string(body))
+
 	if res.StatusCode != 200 {
+		LogEvent(
+			GetUnixTimestamp(),
+			initalTime,
+			service.Service,
+			service.Version,
+			"API Status",
+			"Error",
+			"2020-09-09",
+			string(body),
+			eventTable)
 		fmt.Printf("service returned a status not 200: (%d)\n", res.StatusCode)
-		return
+		return "error", nil
 	}
 
 	LogEvent(
@@ -163,7 +216,7 @@ func LogEvent(
 	}
 
 	av, err := dynamodbattribute.MarshalMap(item)
-	fmt.Println(av)
+
 	if err != nil {
 		fmt.Println("Got error marshalling Log:")
 		fmt.Println(err.Error())
@@ -213,8 +266,5 @@ func GetServiceDetails(service string, version string, tableName string) Service
 		panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
 	}
 
-	//jsonString, err := json.Marshal(item.Parameters)
-	//println(string(jsonString))
-	//return string(jsonString)
 	return item
 }
