@@ -340,7 +340,10 @@ resource "aws_iam_policy" "self_service_api_invoke_policy" {
                 "execute-api:Invoke",
                 "execute-api:InvalidateCache"
             ],
-            "Resource": "${aws_api_gateway_rest_api.api_gateway.arn}"
+            "Resource":[
+               "${aws_api_gateway_rest_api.api_gateway.arn}",
+               "${aws_api_gateway_rest_api.api_gateway_master.arn}"
+            ]
         }
     ]
 }
