@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
@@ -67,10 +71,43 @@ func Handler(request Request) (string, error) {
 		"Schedule",
 		"Log",
 		"2020-09-15",
-		"message",
+		service.Service+" scheduled",
 		eventTable)
 
-	fmt.Printf("Do Logic")
+	cfg, err := external.LoadDefaultAWSConfig(
+		external.WithSharedConfigProfile(profile),
+	)
+	if err != nil {
+		fmt.Println("unable to create an AWS session for the provided profile")
+		return
+	}
+
+	URL := "https://api.pagerduty.com/incidents"
+
+	var requestJSON = []byte(fmt.Sprintf(`{"service":"%v","version":"%v}`, service.Service, service.Version))
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	req = req.WithContext(ctx)
+	signer := v4.NewSigner(cfg.Credentials)
+	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
+	if err != nil {
+		fmt.Printf("failed to sign request: (%v)\n", err)
+		return
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Printf("failed to call remote service: (%v)\n", err)
+		return
+	}
+
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		fmt.Printf("service returned a status not 200: (%d)\n", res.StatusCode)
+		return
+	}
 
 	LogEvent(
 		GetUnixTimestamp(),
@@ -78,8 +115,8 @@ func Handler(request Request) (string, error) {
 		service.Service,
 		service.Version,
 		"API Request Sent",
-		"eventType",
-		"2020-09-15",
+		"Log",
+		"2020-09-08",
 		"API GW Request Sent",
 		eventTable)
 

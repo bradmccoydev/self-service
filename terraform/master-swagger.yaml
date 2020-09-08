@@ -1,3 +1,4 @@
+
 ---
 swagger: "2.0"
 info:
@@ -16,7 +17,10 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/Empty"
+      security:
+      - sigv4: []
       x-amazon-apigateway-integration:
+        type: "aws"
         uri: ${ServiceMetadata}
         responses:
           default:
@@ -24,7 +28,6 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
-        type: "aws"
   /invokeService:
     post:
       produces:
@@ -34,7 +37,10 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/Empty"
+      security:
+      - sigv4: []
       x-amazon-apigateway-integration:
+        type: "aws"
         uri: ${ServiceInvoker}
         responses:
           default:
@@ -42,7 +48,6 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
-        type: "aws"
   /log:
     post:
       produces:
@@ -52,7 +57,10 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/Empty"
+      security:
+      - sigv4: []
       x-amazon-apigateway-integration:
+        type: "aws"
         uri: ${Logger}
         responses:
           default:
@@ -60,7 +68,12 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
-        type: "aws"
+securityDefinitions:
+  sigv4:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "awsSigv4"
 definitions:
   Empty:
     type: "object"

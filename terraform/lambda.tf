@@ -47,6 +47,7 @@ resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
       region = var.aws_region
       environment = var.environment
       sns_topic_arn = aws_sns_topic.sns_submission.arn
+      api_gateway = aws_api_gateway_deployment.api_gateway_deployment_master.id
     }
    }
   }  
@@ -129,6 +130,8 @@ resource "aws_lambda_function" "service_invoker" {
         region = var.aws_region
         environment = var.environment
         sns_topic_arn = aws_sns_topic.sns_submission.arn
+        service_table = aws_dynamodb_table.service.name
+        event_table = aws_dynamodb_table.event.name
       }
    }
 }
@@ -161,6 +164,8 @@ resource "aws_lambda_function" "logger_function" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
+        service_table = aws_dynamodb_table.service.name
+        event_table = aws_dynamodb_table.event.name
       }
    }
 }
@@ -186,6 +191,8 @@ resource "aws_lambda_function" "service_metadata" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
+        service_table = aws_dynamodb_table.service.name
+        event_table = aws_dynamodb_table.event.name
       }
    }
 }

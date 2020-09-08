@@ -1,234 +1,107 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/url"
 	"os"
-	"strings"
-
-	"github.com/bradmccoydev/pkg/lambdainvoker"
-	_ "github.com/lib/pq"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	_ "github.com/aws/aws-sdk-go/service/lambda"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 type Request struct {
-	Body    string `json:"body"`
-	Headers struct {
-		Accept                 string `json:"Accept"`
-		AcceptEncoding         string `json:"Accept-Encoding"`
-		ContentType            string `json:"Content-Type"`
-		Host                   string `json:"Host"`
-		UserAgent              string `json:"User-Agent"`
-		XAmznTraceID           string `json:"X-Amzn-Trace-Id"`
-		XForwardedFor          string `json:"X-Forwarded-For"`
-		XForwardedPort         string `json:"X-Forwarded-Port"`
-		XForwardedProto        string `json:"X-Forwarded-Proto"`
-		XSlackRequestTimestamp string `json:"X-Slack-Request-Timestamp"`
-		XSlackSignature        string `json:"X-Slack-Signature"`
-	} `json:"headers"`
+	ServiceID      string `json:"service_id"`
+	ServiceVersion string `json:"service_version"`
 }
 
-type DialogSuggestion struct {
-	Type     string `json:"type"`
-	Token    string `json:"token"`
-	ActionTs string `json:"action_ts"`
-	Team     struct {
-		ID     string `json:"id"`
-		Domain string `json:"domain"`
-	} `json:"team"`
-	User struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	} `json:"user"`
-	Channel struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	} `json:"channel"`
-	Name       string `json:"name"`
-	Value      string `json:"value"`
-	CallbackID string `json:"callback_id"`
-	State      string `json:"state"`
+type Service struct {
+	Service    string `json:"service"`
+	Endpoint   string `json:"endpoint"`
+	Type       string `json:"type"`
+	Version    string `json:"version"`
+	Parameters string `json:"parameters"`
 }
 
-type ExternalDataSource struct {
-	Values []struct {
-		Source    string `json:"source"`
-		Name      string `json:"name"`
-		Table     string `json:"table"`
-		Key       string `json:"key"`
-		Attribute string `json:"attribute"`
-		Value     string `json:"value"`
-	} `json:"values"`
+type Event struct {
+	ID             string `json:"id"`
+	TrackingID     string `json:"tracking_id"`
+	Service        string `json:"service"`
+	ServiceVersion string `json:"service_version"`
+	Stage          string `json:"stage"`
+	EventType      string `json:"event_type"`
+	DateTime       string `json:"datetime"`
+	Message        string `json:"message"`
 }
 
+// Handler - the actual logic
 func Handler(request Request) (string, error) {
-	signingSecretKey := os.Getenv("secret_id")
+	serviceTable := os.Getenv("service_table")
+	eventTable := os.Getenv("event_table")
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-
-	svc := secretsmanager.New(sess)
-
-	signingSecretInput := &secretsmanager.GetSecretValueInput{
-		SecretId:     aws.String(signingSecretKey),
-		VersionStage: aws.String("AWSCURRENT"),
+	if request.ServiceID == "" {
+		fmt.Printf("No service ID provided")
+		return "No service ID provided", nil
 	}
 
-	signingSecret, err := svc.GetSecretValue(signingSecretInput)
+	service := GetServiceDetails(
+		request.ServiceID,
+		request.ServiceVersion,
+		serviceTable)
 
-	if err != nil {
-		fmt.Println("Got error decrypting data: ", err)
-		os.Exit(1)
-	}
+	initalTime := GetUnixTimestamp()
 
-	output := "{'options':[{'label':'Error - Contact TCS','value':'error'}]}"
+	LogEvent(
+		initalTime,
+		initalTime,
+		service.Service,
+		service.Version,
+		"Schedule",
+		"Log",
+		"2020-09-15",
+		service.Service+" scheduled",
+		eventTable)
 
-	signatureBaseString := fmt.Sprintf("v0:%v:%v", request.Headers.XSlackRequestTimestamp, request.Body)
+	fmt.Printf("Do Logic")
 
-	h := hmac.New(sha256.New, []byte(*signingSecret.SecretString))
-	h.Write([]byte(signatureBaseString))
-	sha := hex.EncodeToString(h.Sum(nil))
+	LogEvent(
+		GetUnixTimestamp(),
+		initalTime,
+		service.Service,
+		service.Version,
+		"API Request Sent",
+		"Log",
+		"2020-09-08",
+		"API GW Request Sent",
+		eventTable)
 
-	if request.Headers.XSlackSignature != "v0="+sha {
-		newError := strings.Replace(output, "Error", "UnAuth", -1)
-		fmt.Println(newError)
-		return "User not authorised", nil
-	}
-
-	decodedValue, err := url.QueryUnescape(request.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	suggestion := strings.Replace(decodedValue, "payload=", "", -1)
-	fmt.Println("Suggestion: " + suggestion)
-
-	var dialogSuggestion DialogSuggestion
-	json.Unmarshal([]byte(suggestion), &dialogSuggestion)
-
-	fmt.Println("callback: ", dialogSuggestion.CallbackID)
-	fmt.Println("callback: ", dialogSuggestion.Team.ID)
-
-	externalDataSourceJSON := GetCommandDetails(
-		"command",
-		dialogSuggestion.CallbackID,
-		dialogSuggestion.Team.ID,
-		"external_data_source")
-
-	fmt.Println("externalDataSourceJSON: ", externalDataSourceJSON)
-	fmt.Println("callback", dialogSuggestion.Team.ID)
-
-	var externalDataSource ExternalDataSource
-	json.Unmarshal([]byte(externalDataSourceJSON), &externalDataSource)
-
-	tableName := ""
-	key := ""
-	value := ""
-	attribute := ""
-	source := ""
-
-	for _, dataSource := range externalDataSource.Values {
-		if dialogSuggestion.Name == dataSource.Name {
-			fmt.Println("Source", dataSource.Source)
-			fmt.Println("Value", dataSource.Value)
-			fmt.Println("Table", dataSource.Table)
-			fmt.Println("Key", dataSource.Key)
-			fmt.Println("Attribute", dataSource.Attribute)
-
-			source = dataSource.Source
-
-			if source == "DynamoDb" {
-				value = GetStateValue(dialogSuggestion.State, dataSource.Value)
-			}
-
-			tableName = dataSource.Table
-			key = dataSource.Key
-			attribute = dataSource.Attribute
-		}
-	}
-
-	if source == "Lambda" {
-		output = lambdainvoker.InvokeLambda(tableName, "brad", "mccoy")
-		output = strings.TrimSuffix(output, "\"")
-		output = strings.TrimPrefix(output, "\"")
-	}
-
-	if source == "DynamoDb" {
-		output = GetStringListQuery(
-			tableName,
-			key,
-			value,
-			attribute)
-	}
-
-	fmt.Println("output: " + strings.Replace(output, "\"", "", -1))
-
-	return output, nil
+	return "working", nil
 }
 
+// Entrypoint by AWS Lambda
 func main() {
 	lambda.Start(Handler)
 }
 
-func GetStateValue(state string, name string) string {
-	state = strings.Replace(state, "{", "", -1)
-	state = strings.Replace(state, "}", "", -1)
-
-	attribute := ""
-	value := ""
-	lines := strings.Split(state, "',")
-
-	for _, line := range lines {
-		x := before(line, "':")
-		y := after(line, ":'")
-		attribute = strings.Replace(x, "'", "", -1)
-		value = strings.Replace(y, "'", "", -1)
-
-		if attribute == name {
-			fmt.Printf("match:" + value)
-			return value
-		}
-	}
-	return "Error"
+func GetUnixTimestamp() string {
+	time := time.Now().Unix()
+	return strconv.FormatInt(time, 10)
 }
 
-func before(value string, a string) string {
-	pos := strings.Index(value, a)
-	if pos == -1 {
-		return ""
-	}
-	return value[0:pos]
-}
-
-func after(value string, a string) string {
-	pos := strings.LastIndex(value, a)
-	if pos == -1 {
-		return ""
-	}
-	adjustedPos := pos + len(a)
-	if adjustedPos >= len(value) {
-		return ""
-	}
-	return value[adjustedPos:len(value)]
-}
-
-func GetCommandDetails(
-	tableName string,
-	partitionKey string,
-	sortKey string,
-	attribute string) string {
+// LogEvent function that logs events
+func LogEvent(
+	id string,
+	trackingID string,
+	service string,
+	serviceVersion string,
+	stage string,
+	eventType string,
+	dateTime string,
+	message string,
+	tableName string) {
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -236,85 +109,70 @@ func GetCommandDetails(
 
 	svc := dynamodb.New(sess)
 
-	params := &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
-		AttributesToGet: []*string{
-			aws.String(attribute),
-		},
-		Key: map[string]*dynamodb.AttributeValue{
-			"command": {
-				S: aws.String(partitionKey),
-			},
-			"team": {
-				S: aws.String(sortKey),
-			},
-		},
+	item := Event{
+		ID:             id,
+		TrackingID:     trackingID,
+		Service:        service,
+		ServiceVersion: serviceVersion,
+		Stage:          stage,
+		EventType:      eventType,
+		DateTime:       dateTime,
+		Message:        message,
 	}
 
-	resp, err := svc.GetItem(params)
-
+	av, err := dynamodbattribute.MarshalMap(item)
+	fmt.Println(av)
 	if err != nil {
-		fmt.Println("Got error decrypting data: ", err)
+		fmt.Println("Got error marshalling Log:")
+		fmt.Println(err.Error())
+		fmt.Println(av)
 		os.Exit(1)
 	}
 
-	output := ""
-
-	for _, line := range resp.Item {
-		output = *line.S
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(tableName),
 	}
 
-	return output
+	_, err = svc.PutItem(input)
+	if err != nil {
+		fmt.Println("Got error calling PutItem:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 }
 
-func GetStringListQuery(
-	tableName string,
-	key string,
-	value string,
-	attribute string) string {
-
+func GetServiceDetails(service string, version string, tableName string) Service {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
 	svc := dynamodb.New(sess)
 
-	params := &dynamodb.GetItemInput{
+	result, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
-		AttributesToGet: []*string{
-			aws.String(attribute),
-		},
 		Key: map[string]*dynamodb.AttributeValue{
-			key: {
-				S: aws.String(value),
+			"service": {
+				S: aws.String(service),
+			},
+			"version": {
+				S: aws.String(version),
 			},
 		},
-	}
-
-	resp, err := svc.GetItem(params)
-
+	})
 	if err != nil {
-		fmt.Println("Got error decrypting data: ", err)
-		os.Exit(1)
+		fmt.Println(err.Error())
 	}
 
-	output := "{'options':["
+	item := Service{}
 
-	for _, line := range resp.Item {
-		for _, x := range line.L {
-			attribute := strings.Replace(*x.S, "url=", "", -1)
-			if len(attribute) > 69 {
-				attribute = "Value To Long"
-			}
-			output = output + "{'label':'" + attribute + "','value':'" + attribute + "'},"
-		}
+	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
 	}
 
-	output = strings.TrimSuffix(output, ",")
-	output = output + "]}"
-
-	fmt.Println(output)
-
-	return output
-
+	//jsonString, err := json.Marshal(item.Parameters)
+	//println(string(jsonString))
+	//return string(jsonString)
+	return item
 }

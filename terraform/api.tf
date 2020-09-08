@@ -13,7 +13,6 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
 
 data "template_file" api_swagger{
   template = file("./slack-swagger.yaml")
-
   vars = {
     Slack = aws_lambda_function.slack_slash_command_staging.invoke_arn
     SlackSlashCommand = aws_lambda_function.slack_slash_command.invoke_arn
@@ -22,7 +21,7 @@ data "template_file" api_swagger{
   }
 }
 
-resource "aws_api_gateway_deployment" "api-gateway-deployment" {
+resource "aws_api_gateway_deployment" "api_gateway_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = var.environment
 }
@@ -58,12 +57,11 @@ resource "aws_lambda_permission" "apigw_permission_dynamic_data_source" {
 resource "aws_api_gateway_rest_api" "api_gateway_master" {
   name        = "MasterAPIGateway"
   description = "Self Service Master API"
-  body        = data.template_file.api_swagger.rendered
+  body        = data.template_file.api_swagger_master.rendered
 }
 
 data "template_file" api_swagger_master{
   template = file("./master-swagger.yaml")
-
   vars = {
     ServiceInvoker = aws_lambda_function.service_invoker.invoke_arn
     ServiceMetadata = aws_lambda_function.service_metadata.invoke_arn
@@ -71,8 +69,8 @@ data "template_file" api_swagger_master{
   }
 }
 
-resource "aws_api_gateway_deployment" "api-gateway-deployment-master" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+resource "aws_api_gateway_deployment" "api_gateway_deployment_master" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_master.id
   stage_name  = var.environment
 }
 
