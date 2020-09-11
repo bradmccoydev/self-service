@@ -61,11 +61,16 @@ func Handler(request Request) (string, error) {
 		request.ServiceVersion,
 		serviceTable)
 
-	initalTime := GetUnixTimestamp()
+	fmt.Printf("****")
+	fmt.Printf(service.Service)
+	fmt.Printf(service.Version)
+	fmt.Printf("###")
+
+	trackingID := GetUnixTimestamp()
 
 	LogEvent(
-		initalTime,
-		initalTime,
+		trackingID,
+		trackingID,
 		service.Service,
 		service.Version,
 		"Schedule",
@@ -90,7 +95,7 @@ func Handler(request Request) (string, error) {
 		fmt.Println("unable to create an AWS session for the provided profile")
 		LogEvent(
 			GetUnixTimestamp(),
-			initalTime,
+			trackingID,
 			service.Service,
 			service.Version,
 			"AWS Credentials Error",
@@ -103,7 +108,7 @@ func Handler(request Request) (string, error) {
 
 	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService", masterAPIID, region, environment)
 
-	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v}`, service.Service, service.Version))
+	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -115,7 +120,7 @@ func Handler(request Request) (string, error) {
 	if err != nil {
 		LogEvent(
 			GetUnixTimestamp(),
-			initalTime,
+			trackingID,
 			service.Service,
 			service.Version,
 			"API Error",
@@ -131,7 +136,7 @@ func Handler(request Request) (string, error) {
 	if err != nil {
 		LogEvent(
 			GetUnixTimestamp(),
-			initalTime,
+			trackingID,
 			service.Service,
 			service.Version,
 			"API Request Sent",
@@ -150,7 +155,7 @@ func Handler(request Request) (string, error) {
 	if res.StatusCode != 200 {
 		LogEvent(
 			GetUnixTimestamp(),
-			initalTime,
+			trackingID,
 			service.Service,
 			service.Version,
 			"API Status",
@@ -164,7 +169,7 @@ func Handler(request Request) (string, error) {
 
 	LogEvent(
 		GetUnixTimestamp(),
-		initalTime,
+		trackingID,
 		service.Service,
 		service.Version,
 		"API Request Sent",

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -16,6 +19,8 @@ import (
 type Request struct {
 	ServiceID      string `json:"service_id"`
 	ServiceVersion string `json:"service_version"`
+	TrackingID     string `json:"tracking_id"`
+	Body           string `json:"body"`
 }
 
 type Service struct {
@@ -38,47 +43,84 @@ type Event struct {
 }
 
 // Handler - the actual logic
-func Handler(request Request) (string, error) {
+func Handler(ctx context.Context, request Request) (events.APIGatewayProxyResponse, error) {
 	serviceTable := os.Getenv("service_table")
 	eventTable := os.Getenv("event_table")
 
-	if request.ServiceID == "" {
-		fmt.Printf("No service ID provided")
-		return "No service ID provided", nil
+	fmt.Printf(request.Body)
+
+	fmt.Printf(serviceTable)
+	fmt.Printf(eventTable)
+
+	resp := &Request{
+		ServiceID: "now.UTC()",
 	}
 
-	service := GetServiceDetails(
-		request.ServiceID,
-		request.ServiceVersion,
-		serviceTable)
+	body, err := json.Marshal(resp)
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
+	}
+	return events.APIGatewayProxyResponse{Body: string(body), StatusCode: 200}, nil
 
-	initalTime := GetUnixTimestamp()
+	// fmt.Println("Received body: ", request)
+	// //fmt.Println("Received body: ", request.Body)
 
-	LogEvent(
-		initalTime,
-		initalTime,
-		service.Service,
-		service.Version,
-		"Schedule",
-		"Log",
-		"2020-09-15",
-		service.Service+" invoked",
-		eventTable)
+	// fmt.Printf("Processing request data for request %s.\n", request.RequestContext.RequestID)
+	// fmt.Printf("Body size = %d.\n", len(request.Body))
 
-	fmt.Printf("Do Logic")
+	// fmt.Println("Headers:")
+	// for key, value := range request.Headers {
+	// 	fmt.Printf("    %s: %s\n", key, value)
+	// }
 
-	LogEvent(
-		GetUnixTimestamp(),
-		initalTime,
-		service.Service,
-		service.Version,
-		"Service Executed",
-		"Log",
-		"2020-09-08",
-		"Service Request Sent",
-		eventTable)
+	// code := 200
+	// response, error := json.Marshal(Request{Response: "Hello, " + name.Body})
+	// if error != nil {
+	// 	log.Println(error)
+	// 	response = []byte("Internal Server Error")
+	// 	code = 500
+	// }
 
-	return "working", nil
+	// fmt.Printf("****")
+	// fmt.Printf(request.ServiceID)
+	// fmt.Printf(request.ServiceVersion)
+	// fmt.Printf(request.TrackingID)
+	// fmt.Printf("###")
+
+	// if request.ServiceID == "" {
+	// 	fmt.Printf("No service ID provided")
+	// 	return "No service ID provided", nil
+	// }
+
+	// service := GetServiceDetails(
+	// 	request.ServiceID,
+	// 	request.ServiceVersion,
+	// 	serviceTable)
+
+	// LogEvent(
+	// 	GetUnixTimestamp(),
+	// 	request.TrackingID,
+	// 	service.Service,
+	// 	service.Version,
+	// 	"Schedule",
+	// 	"Log",
+	// 	"2020-09-15",
+	// 	service.Service+" invoked",
+	// 	eventTable)
+
+	// fmt.Printf("Do Logic")
+
+	// LogEvent(
+	// 	GetUnixTimestamp(),
+	// 	request.TrackingID,
+	// 	service.Service,
+	// 	service.Version,
+	// 	"Service Executed",
+	// 	"Log",
+	// 	"2020-09-08",
+	// 	"Service Request Sent",
+	// 	eventTable)
+
 }
 
 // Entrypoint by AWS Lambda

@@ -216,3 +216,21 @@ func Handler(request Request) (string, error) {
 func main() {
 	lambda.Start(Handler)
 }
+
+// func getCommandFromBody(req Request) (string, error) {
+
+// 	// Pull out the body
+// 	body := req.Body
+
+// 	// Massage body into the command structure
+// 	reqData := Command{}
+// 	err := json.Unmarshal([]byte(body), &reqData)
+// 	if err != nil {
+// 		fmt.Println("Error reported during unmarshalling of request body: ", err)
+// 		return "", err
+// 	}
+
+// 	// Get the requested command & return it
+// 	cmd := reqData.Command
+// 	return cmd, nil
+// }
