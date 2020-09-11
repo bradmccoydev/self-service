@@ -73,10 +73,10 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "${aws_dynamodb_table.command.arn}",
-                "${aws_dynamodb_table.command.arn}/*",
-                "${aws_dynamodb_table.submission.arn}",
-                "${aws_dynamodb_table.submission.arn}/*"
+                "${aws_dynamodb_table.service.arn}",
+                "${aws_dynamodb_table.service.arn}/*",
+                "${aws_dynamodb_table.event.arn}",
+                "${aws_dynamodb_table.event.arn}/*"
             ]
         },
         {
@@ -100,9 +100,14 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
 EOF
 }
 
+resource "aws_iam_role_policy_attachment" "self_service_api_invoke_attachment" {
+  role       = aws_iam_role.self_service_role.name
+  policy_arn = aws_iam_policy.self_service_api_invoke_policy.arn
+}
+
 resource "aws_iam_user" "developer" {
   name = "developer"
-  path = "/system/"
+  path = "/"
 
   tags = {
     environment = "Dev"
@@ -121,7 +126,7 @@ resource "aws_iam_policy" "developer_policy" {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "VisualEditor0",
+            "Sid": "SecretsManager",
             "Effect": "Allow",
             "Action": [
                 "secretsmanager:GetSecretValue",
@@ -144,6 +149,7 @@ resource "aws_iam_policy" "developer_policy" {
                 "${aws_lambda_function.slack_slash_command_staging.arn}",
                 "${aws_lambda_function.slack_slash_command.arn}",
                 "${aws_lambda_function.process_slack_submission.arn}",
+                "${aws_lambda_function.service_invoker.arn}",
                 "${aws_sqs_queue.submission_queue.arn}"
             ]
         },
@@ -186,16 +192,14 @@ resource "aws_iam_policy" "developer_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "${aws_dynamodb_table.command.arn}",
-                "${aws_dynamodb_table.command.arn}/*",
-                "${aws_dynamodb_table.submission.arn}",
-                "${aws_dynamodb_table.submission.arn}/*",
-                "${aws_dynamodb_table.job.arn}",
-                "${aws_dynamodb_table.job.arn}/*"
+                "${aws_dynamodb_table.service.arn}",
+                "${aws_dynamodb_table.service.arn}/*",
+                "${aws_dynamodb_table.event.arn}",
+                "${aws_dynamodb_table.event.arn}/*"
             ]
         },
         {
-            "Sid": "VisualEditor3",
+            "Sid": "S3Buckets",
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
@@ -203,7 +207,7 @@ resource "aws_iam_policy" "developer_policy" {
             ]
         },
         {
-            "Sid": "VisualEditor4",
+            "Sid": "SqsQueues",
             "Effect": "Allow",
             "Action": "sqs:*",
             "Resource": [
@@ -295,6 +299,67 @@ resource "aws_iam_policy" "self_service_state_execution_policy" {
     ]
 }
 EOF
+}
+
+resource "aws_iam_role" "slack_role" {
+  name = "SlackRole"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "lambda.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::${var.aws_account_id}:root"
+        ]
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {}
+    }
+  ]
+}
+EOF
+  tags = var.tags
+}
+
+resource "aws_iam_policy" "self_service_api_invoke_policy" {
+  name        = "SelfServiceApiInvokePolicy"
+  description = "Permission To Invoke API"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "execute-api:Invoke",
+                "execute-api:InvalidateCache"
+            ],
+            "Resource":[
+               "${aws_api_gateway_rest_api.api_gateway.arn}/*",
+               "${aws_api_gateway_rest_api.api_gateway_master.arn}/*",
+               "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/POST/invokeService",
+               "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/*/*/*"
+            ]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "slack_api_gateway_role_policy_attachment" {
+  role       = aws_iam_role.slack_role.name
+  policy_arn = aws_iam_policy.self_service_api_invoke_policy.arn
 }
 
 resource "aws_iam_role" "state_execution_role" {
