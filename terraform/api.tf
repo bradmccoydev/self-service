@@ -26,6 +26,20 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
   stage_name  = var.environment
 }
 
+resource "aws_api_gateway_method_settings" "general_settings" {
+  rest_api_id = "${aws_api_gateway_rest_api.api_gateway.id}"
+  stage_name  = "${aws_api_gateway_deployment.api_gateway_deployment.stage_name}"
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled        = true
+    data_trace_enabled     = true
+    logging_level          = "INFO"
+    throttling_rate_limit  = 100
+    throttling_burst_limit = 50
+  }
+}
+
 resource "aws_lambda_permission" "apigw_permission_slash_command" {
    statement_id  = "AllowAPIGatewayInvoke"
    action        = "lambda:InvokeFunction"
@@ -72,6 +86,20 @@ data "template_file" api_swagger_master{
 resource "aws_api_gateway_deployment" "api_gateway_deployment_master" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway_master.id
   stage_name  = var.environment
+}
+
+resource "aws_api_gateway_method_settings" "general_settings_master" {
+  rest_api_id = "${aws_api_gateway_rest_api.api_gateway_master.id}"
+  stage_name  = "${aws_api_gateway_deployment.api_gateway_deployment_master.stage_name}"
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled        = true
+    data_trace_enabled     = true
+    logging_level          = "INFO"
+    throttling_rate_limit  = 100
+    throttling_burst_limit = 50
+  }
 }
 
 resource "aws_lambda_permission" "apigw_permission_service_metadata" {

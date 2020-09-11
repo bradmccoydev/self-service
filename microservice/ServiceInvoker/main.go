@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -15,6 +16,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
+
+// APIGatewayProxyRequest contains data coming from the API Gateway proxy
+type APIGatewayProxyRequest struct {
+	Resource              string            `json:"resource"` // The resource path defined in API Gateway
+	Path                  string            `json:"path"`     // The url path for the caller
+	HTTPMethod            string            `json:"httpMethod"`
+	Headers               map[string]string `json:"headers"`
+	QueryStringParameters map[string]string `json:"queryStringParameters"`
+	PathParameters        map[string]string `json:"pathParameters"`
+	StageVariables        map[string]string `json:"stageVariables"`
+	Body                  string            `json:"body"`
+	IsBase64Encoded       bool              `json:"isBase64Encoded,omitempty"`
+}
 
 type Request struct {
 	ServiceID      string `json:"service_id"`
@@ -43,12 +57,14 @@ type Event struct {
 }
 
 // Handler - the actual logic
-func Handler(ctx context.Context, request Request) (events.APIGatewayProxyResponse, error) {
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	serviceTable := os.Getenv("service_table")
 	eventTable := os.Getenv("event_table")
 
-	fmt.Printf(request.Body)
+	body, err := base64.StdEncoding.DecodeString(request.Body)
+	fmt.Printf(string(body))
 
+	fmt.Printf(request.Body)
 	fmt.Printf(serviceTable)
 	fmt.Printf(eventTable)
 
@@ -56,11 +72,11 @@ func Handler(ctx context.Context, request Request) (events.APIGatewayProxyRespon
 		ServiceID: "now.UTC()",
 	}
 
-	body, err := json.Marshal(resp)
+	responseBody, err := json.Marshal(resp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
-	return events.APIGatewayProxyResponse{Body: string(body), StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{Body: string(responseBody), StatusCode: 200}, nil
 
 	// fmt.Println("Received body: ", request)
 	// //fmt.Println("Received body: ", request.Body)
