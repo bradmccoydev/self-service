@@ -212,7 +212,7 @@ resource "aws_lambda_function" "scheduler" {
     s3_key = "microservice/Scheduler/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket

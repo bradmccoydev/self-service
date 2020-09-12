@@ -27,8 +27,8 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
 }
 
 resource "aws_api_gateway_method_settings" "general_settings" {
-  rest_api_id = "${aws_api_gateway_rest_api.api_gateway.id}"
-  stage_name  = "${aws_api_gateway_deployment.api_gateway_deployment.stage_name}"
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  stage_name  = aws_api_gateway_deployment.api_gateway_deployment.stage_name
   method_path = "*/*"
 
   settings {
@@ -89,8 +89,8 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment_master" {
 }
 
 resource "aws_api_gateway_method_settings" "general_settings_master" {
-  rest_api_id = "${aws_api_gateway_rest_api.api_gateway_master.id}"
-  stage_name  = "${aws_api_gateway_deployment.api_gateway_deployment_master.stage_name}"
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_master.id
+  stage_name  = aws_api_gateway_deployment.api_gateway_deployment_master.stage_name
   method_path = "*/*"
 
   settings {

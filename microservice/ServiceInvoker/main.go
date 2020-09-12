@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,19 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
-
-// APIGatewayProxyRequest contains data coming from the API Gateway proxy
-type APIGatewayProxyRequest struct {
-	Resource              string            `json:"resource"` // The resource path defined in API Gateway
-	Path                  string            `json:"path"`     // The url path for the caller
-	HTTPMethod            string            `json:"httpMethod"`
-	Headers               map[string]string `json:"headers"`
-	QueryStringParameters map[string]string `json:"queryStringParameters"`
-	PathParameters        map[string]string `json:"pathParameters"`
-	StageVariables        map[string]string `json:"stageVariables"`
-	Body                  string            `json:"body"`
-	IsBase64Encoded       bool              `json:"isBase64Encoded,omitempty"`
-}
 
 type Request struct {
 	ServiceID      string `json:"service_id"`
@@ -57,19 +42,36 @@ type Event struct {
 }
 
 // Handler - the actual logic
-func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	serviceTable := os.Getenv("service_table")
 	eventTable := os.Getenv("event_table")
 
-	body, err := base64.StdEncoding.DecodeString(request.Body)
-	fmt.Printf(string(body))
-
-	fmt.Printf(request.Body)
 	fmt.Printf(serviceTable)
 	fmt.Printf(eventTable)
 
+	email := request.QueryStringParameters["test"]
+	fmt.Printf(email)
+	fmt.Printf("hello\n")
+
+	fmt.Printf(request.Body)
+
+	// rawParam1, found := request.QueryParameters["param1"]
+	// if found {
+	// 	// query parameters are typically URL encoded so to get the value
+	// 	value, err := url.QueryUnescape(rawParam1)
+	// 	if nil != err {
+	// 		return handleError(err)
+	// 	}
+	// 	// ... now use the value as needed
+	// }
+
+	// body, err := base64.StdEncoding.DecodeString(request.Body)
+	// fmt.Printf(string(body))
+
+	//fmt.Printf(request.Body)
+
 	resp := &Request{
-		ServiceID: "now.UTC()",
+		ServiceID: "test",
 	}
 
 	responseBody, err := json.Marshal(resp)
