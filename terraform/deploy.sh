@@ -23,9 +23,9 @@ aws --region us-west-2 s3 cp ./../build/microservice/ServiceInvoker/main.zip s3:
 # zip -r ./../build/microservice/ServiceMetadata/main.zip ./../build/microservice/ServiceMetadata/main
 # aws --region us-west-2 s3 cp ./../build/microservice/ServiceMetadata/main.zip s3://selfservice.bradmccoy.io/microservice/ServiceMetadata/main.zip
 
-# GOOS=linux go build -o ./../build/microservice/Logger/main ./../microservice/Logger/main.go
-# zip -r ./../build/microservice/Logger/main.zip ./../build/microservice/Logger/main
-# aws --region us-west-2 s3 cp ./../build/microservice/Logger/main.zip s3://selfservice.bradmccoy.io/microservice/Logger/main.zip
+GOOS=linux go build -o ./../build/microservice/Logger/main ./../microservice/Logger/main.go
+zip -r ./../build/microservice/Logger/main.zip ./../build/microservice/Logger/main
+aws --region us-west-2 s3 cp ./../build/microservice/Logger/main.zip s3://selfservice.bradmccoy.io/microservice/Logger/main.zip
 
 GOOS=linux go build -o ./../build/microservice/Scheduler/main ./../microservice/Scheduler/main.go
 zip -r ./../build/microservice/Scheduler/main.zip ./../build/microservice/Scheduler/main

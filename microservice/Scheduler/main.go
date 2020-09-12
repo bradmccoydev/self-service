@@ -97,9 +97,10 @@ func Handler(request Request) (string, error) {
 
 	cfg.Region = region
 	ctx := context.Background()
+
 	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService?serviceId=%v&serviceVersion=%v&trackingId=%v", masterAPIID, region, environment, service.Service, service.Version, trackingID)
-	fmt.Printf(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
 	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
+
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -142,7 +143,6 @@ func Handler(request Request) (string, error) {
 
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Println("response Body:", string(body))
 
 	if res.StatusCode != 200 {
 		LogEvent(

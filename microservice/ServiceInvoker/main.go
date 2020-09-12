@@ -13,21 +13,25 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sfn"
 )
 
-type Request struct {
-	ServiceID      string `json:"service_id"`
-	ServiceVersion string `json:"service_version"`
-	TrackingID     string `json:"tracking_id"`
-	Body           string `json:"body"`
-}
+// type Request struct {
+// 	ServiceID      string `json:"service_id"`
+// 	ServiceVersion string `json:"service_version"`
+// 	TrackingID     string `json:"tracking_id"`
+// 	Body           string `json:"body"`
+// }
 
 type Service struct {
-	Service    string `json:"service"`
-	Endpoint   string `json:"endpoint"`
-	Type       string `json:"type"`
-	Version    string `json:"version"`
-	Parameters string `json:"parameters"`
+	Service          string `json:"service"`
+	Title            string `json:"title"`
+	Endpoint         string `json:"endpoint"`
+	EndpointType     string `json:"endpoint_type"`
+	Type             string `json:"type"`
+	Version          string `json:"version"`
+	Parameters       string `json:"parameters"`
+	SchemaDefinition string `json:"schema_definition"`
 }
 
 type Event struct {
@@ -53,10 +57,34 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	serviceVersion := request.QueryStringParameters["serviceVersion"]
 	trackingID := request.QueryStringParameters["trackingId"]
 
-	fmt.Println("serviceId: " + serviceID)
-	fmt.Println("version: " + serviceVersion)
+	service := GetServiceDetails(
+		serviceID,
+		serviceVersion,
+		serviceTable)
+
+	fmt.Println("serviceId: " + service.Service)
+	fmt.Println("version: " + service.Version)
 	fmt.Println("trackingId: " + trackingID)
-	fmt.Printf(request.Body)
+
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := sfn.New(sess)
+
+	params := &sfn.StartExecutionInput{
+		Input:           aws.String("{\"hello\":\"world\"}"),
+		Name:            aws.String(trackingID),
+		StateMachineArn: aws.String(service.Endpoint),
+	}
+
+	// Example sending a request using the StartExecutionRequest method.
+	req, sfnResp := svc.StartExecutionRequest(params)
+
+	err := req.Send()
+	if err == nil { // resp is now filled
+		fmt.Println(sfnResp)
+	}
 
 	// rawParam1, found := request.QueryParameters["param1"]
 	// if found {
@@ -73,8 +101,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	//fmt.Printf(request.Body)
 
-	resp := &Request{
-		ServiceID: "Service Invoked",
+	resp := &Event{
+		Service: "Service Invoked",
 	}
 
 	responseBody, err := json.Marshal(resp)
@@ -234,8 +262,5 @@ func GetServiceDetails(service string, version string, tableName string) Service
 		panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
 	}
 
-	//jsonString, err := json.Marshal(item.Parameters)
-	//println(string(jsonString))
-	//return string(jsonString)
 	return item
 }
