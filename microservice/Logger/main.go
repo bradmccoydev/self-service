@@ -14,6 +14,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	_ "github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -21,6 +23,17 @@ import (
 
 type Request struct {
 	Body string `json:"body"`
+}
+
+type Event struct {
+	ID             string `json:"id"`
+	TrackingID     string `json:"tracking_id"`
+	Service        string `json:"service"`
+	ServiceVersion string `json:"service_version"`
+	Stage          string `json:"stage"`
+	EventType      string `json:"event_type"`
+	DateTime       string `json:"datetime"`
+	Message        string `json:"message"`
 }
 
 func Handler(request Request) (string, error) {
@@ -84,6 +97,57 @@ func Handler(request Request) (string, error) {
 
 func main() {
 	lambda.Start(Handler)
+}
+
+// LogEvent function that logs events
+func LogEvent(
+	id string,
+	trackingID string,
+	service string,
+	serviceVersion string,
+	stage string,
+	eventType string,
+	dateTime string,
+	message string,
+	tableName string) {
+
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := dynamodb.New(sess)
+
+	item := Event{
+		ID:             id,
+		TrackingID:     trackingID,
+		Service:        service,
+		ServiceVersion: serviceVersion,
+		Stage:          stage,
+		EventType:      eventType,
+		DateTime:       dateTime,
+		Message:        message,
+	}
+
+	av, err := dynamodbattribute.MarshalMap(item)
+
+	if err != nil {
+		fmt.Println("Got error marshalling Log:")
+		fmt.Println(err.Error())
+		fmt.Println(av)
+		os.Exit(1)
+	}
+
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(tableName),
+	}
+
+	_, err = svc.PutItem(input)
+	if err != nil {
+		fmt.Println("Got error calling PutItem:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 }
 
 func checkError(message string, err error) {

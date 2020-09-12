@@ -49,10 +49,13 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	fmt.Printf(serviceTable)
 	fmt.Printf(eventTable)
 
-	email := request.QueryStringParameters["test"]
-	fmt.Printf(email)
-	fmt.Printf("hello\n")
+	serviceID := request.QueryStringParameters["serviceId"]
+	serviceVersion := request.QueryStringParameters["serviceVersion"]
+	trackingID := request.QueryStringParameters["trackingId"]
 
+	fmt.Println("serviceId: " + serviceID)
+	fmt.Println("version: " + serviceVersion)
+	fmt.Println("trackingId: " + trackingID)
 	fmt.Printf(request.Body)
 
 	// rawParam1, found := request.QueryParameters["param1"]
@@ -71,7 +74,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	//fmt.Printf(request.Body)
 
 	resp := &Request{
-		ServiceID: "test",
+		ServiceID: "Service Invoked",
 	}
 
 	responseBody, err := json.Marshal(resp)

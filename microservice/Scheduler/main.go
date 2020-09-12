@@ -3,10 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -64,11 +62,6 @@ func Handler(request Request) (string, error) {
 		request.ServiceVersion,
 		serviceTable)
 
-	fmt.Printf("****")
-	fmt.Printf(service.Service)
-	fmt.Printf(service.Version)
-	fmt.Printf("###")
-
 	trackingID := GetUnixTimestamp()
 
 	LogEvent(
@@ -88,14 +81,6 @@ func Handler(request Request) (string, error) {
 
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-		panic("unable to load SDK config, " + err.Error())
-	}
-
-	cfg.Region = region
-	ctx := context.Background()
-
-	if err != nil {
-		fmt.Println("unable to create an AWS session for the provided profile")
 		LogEvent(
 			GetUnixTimestamp(),
 			trackingID,
@@ -107,21 +92,20 @@ func Handler(request Request) (string, error) {
 			err.Error(),
 			eventTable)
 		return "error", nil
+		panic("unable to load SDK config, " + err.Error())
 	}
 
-	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService?test=brad", masterAPIID, region, environment)
+	cfg.Region = region
+	ctx := context.Background()
+	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService?serviceId=%v&serviceVersion=%v&trackingId=%v", masterAPIID, region, environment, service.Service, service.Version, trackingID)
 	fmt.Printf(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
-	fmt.Println("2. Performing Http Post...")
-	todo := Request{"bradservice", "1", "1"}
-	requestJSON, err := json.Marshal(todo)
-	//var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
+	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
 	req = req.WithContext(ctx)
 	signer := v4.NewSigner(sess.Config.Credentials)
-	//signer := v4.NewSigner(cfg.Credentials)
 	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
 
 	if err != nil {
@@ -280,27 +264,4 @@ func GetServiceDetails(service string, version string, tableName string) Service
 	}
 
 	return item
-}
-
-func post(URL string) {
-	fmt.Println("2. Performing Http Post...")
-	todo := Request{"bradservice", "1"}
-	jsonReq, err := json.Marshal(todo)
-
-	resp, err := http.Post(URL, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	defer resp.Body.Close()
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-
-	// Convert response body to string
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
-
-	// Convert response body to Todo struct
-	// var todoStruct Todo
-	// json.Unmarshal(bodyBytes, &todoStruct)
-	// fmt.Printf("%+v\n", todoStruct)
 }

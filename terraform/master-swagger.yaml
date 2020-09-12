@@ -9,7 +9,7 @@ schemes:
 - "https"
 paths:
   /getServiceMetadata:
-    post:
+    x-amazon-apigateway-any-method:
       produces:
       - "application/json"
       responses:
@@ -20,7 +20,7 @@ paths:
       security:
       - sigv4: []
       x-amazon-apigateway-integration:
-        type: "aws"
+        type: "aws_proxy"
         uri: ${ServiceMetadata}
         responses:
           default:
@@ -29,7 +29,7 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
   /invokeService:
-    post:
+    x-amazon-apigateway-any-method:
       produces:
       - "application/json"
       responses:
@@ -40,7 +40,7 @@ paths:
       security:
       - sigv4: []
       x-amazon-apigateway-integration:
-        type: "aws"
+        type: "aws_proxy"
         uri: ${ServiceInvoker}
         responses:
           default:
@@ -49,7 +49,7 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
   /log:
-    post:
+    x-amazon-apigateway-any-method:
       produces:
       - "application/json"
       responses:
@@ -60,7 +60,7 @@ paths:
       security:
       - sigv4: []
       x-amazon-apigateway-integration:
-        type: "aws"
+        type: "aws_proxy"
         uri: ${Logger}
         responses:
           default:
