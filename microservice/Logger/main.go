@@ -2,15 +2,16 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
+	"strconv"
 	"time"
 
-	_ "github.com/lib/pq"
-
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,11 +19,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	_ "github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-type Request struct {
-	Body string `json:"body"`
+type Response struct {
+	ID string `json:"log_id"`
 }
 
 type Event struct {
@@ -32,13 +32,13 @@ type Event struct {
 	ServiceVersion string `json:"service_version"`
 	Stage          string `json:"stage"`
 	EventType      string `json:"event_type"`
-	DateTime       string `json:"datetime"`
+	DateTime       string `json:"date_time"`
 	Message        string `json:"message"`
 }
 
-func Handler(request Request) (string, error) {
-	region := os.Getenv("region")
-	bucket := os.Getenv("bucket")
+// Handler - the actual logic
+func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	eventTable := os.Getenv("event_table")
 
 	const (
 		layoutISO = "2006-01-02T15:04:05+1100"
@@ -46,57 +46,55 @@ func Handler(request Request) (string, error) {
 	)
 
 	date := time.Now().Format(layoutISO)
-	folderName := fmt.Sprintf("/year=/month=/day=")
 
-	fmt.Printf(folderName)
+	ID := request.QueryStringParameters["id"]
+	serviceID := request.QueryStringParameters["serviceId"]
+	serviceVersion := request.QueryStringParameters["serviceVersion"]
+	trackingID := request.QueryStringParameters["trackingId"]
+	stage := request.QueryStringParameters["stage"]
+	eventType := request.QueryStringParameters["eventType"]
+	message := request.QueryStringParameters["message"]
 
-	//var folderName = $"/year={date.Year}/month={date.ToString("MM")}/day={date.ToString("dd")}";
+	fmt.Println("ID: " + ID)
+	fmt.Println("serviceID: " + serviceID)
+	fmt.Println("serviceVersion: " + serviceVersion)
+	fmt.Println("trackingID: " + trackingID)
+	fmt.Println("stage: " + stage)
+	fmt.Println("eventType: " + eventType)
+	fmt.Println("message: " + message)
 
-	filename := string(date)
-	fmt.Printf(string(date))
+	unEscapedMessage, err := url.QueryUnescape(message)
 
-	csv := `{"SuperHero Name", "Power", "Weakness"}`
+	LogEvent(
+		ID,
+		trackingID,
+		serviceID,
+		serviceVersion,
+		stage,
+		eventType,
+		date,
+		unEscapedMessage,
+		eventTable)
 
-	reader := strings.NewReader(csv)
-
-	//https://stackoverflow.com/questions/47621804/upload-object-to-aws-s3-without-creating-a-file-using-aws-sdk-go
-
-	// dt.Columns.Add("id", typeof(String));
-	// dt.Columns.Add("command", typeof(String));
-	// dt.Columns.Add("user", typeof(String));
-	// dt.Columns.Add("team", typeof(String));
-	// dt.Columns.Add("channel", typeof(String));
-	// dt.Columns.Add("payload", typeof(String));
-	// dt.Columns.Add("status", typeof(String));
-	// dt.Columns.Add("date_time_unix", typeof(String));
-	// dt.Columns.Add("date_time_loaded_utc", typeof(String));
-	// dt.Columns.Add("tracking_id", typeof(String));
-
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)})
-	if err != nil {
-		log.Fatal(err)
+	resp := &Response{
+		ID: ID,
 	}
 
-	uploader := s3manager.NewUploader(sess)
-
-	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(filename),
-		Body:   reader,
-	})
-
+	responseBody, err := json.Marshal(resp)
 	if err != nil {
-		fmt.Printf("Unable to upload %q to %q, %v", filename, bucket, err)
+		return events.APIGatewayProxyResponse{}, err
 	}
+	return events.APIGatewayProxyResponse{Body: string(responseBody), StatusCode: 200}, nil
 
-	fmt.Printf("Successfully uploaded %q to %q\n", filename, bucket)
-
-	return "nil", nil
 }
 
 func main() {
 	lambda.Start(Handler)
+}
+
+func GetUnixTimestamp() string {
+	time := time.Now().Unix()
+	return strconv.FormatInt(time, 10)
 }
 
 // LogEvent function that logs events
@@ -129,7 +127,6 @@ func LogEvent(
 	}
 
 	av, err := dynamodbattribute.MarshalMap(item)
-
 	if err != nil {
 		fmt.Println("Got error marshalling Log:")
 		fmt.Println(err.Error())
@@ -148,6 +145,8 @@ func LogEvent(
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+
+	fmt.Println("Successfully added '" + item.ID)
 }
 
 func checkError(message string, err error) {
@@ -185,3 +184,49 @@ func AddFileToS3(s *session.Session, fileDir string) error {
 	})
 	return err
 }
+
+// folderName := fmt.Sprintf("/year=/month=/day=")
+
+// fmt.Printf(folderName)
+
+// //var folderName = $"/year={date.Year}/month={date.ToString("MM")}/day={date.ToString("dd")}";
+
+// filename := string(date)
+// fmt.Printf(string(date))
+
+// csv := `{"SuperHero Name", "Power", "Weakness"}`
+
+// reader := strings.NewReader(csv)
+
+//https://stackoverflow.com/questions/47621804/upload-object-to-aws-s3-without-creating-a-file-using-aws-sdk-go
+
+// dt.Columns.Add("id", typeof(String));
+// dt.Columns.Add("command", typeof(String));
+// dt.Columns.Add("user", typeof(String));
+// dt.Columns.Add("team", typeof(String));
+// dt.Columns.Add("channel", typeof(String));
+// dt.Columns.Add("payload", typeof(String));
+// dt.Columns.Add("status", typeof(String));
+// dt.Columns.Add("date_time_unix", typeof(String));
+// dt.Columns.Add("date_time_loaded_utc", typeof(String));
+// dt.Columns.Add("tracking_id", typeof(String));
+
+// sess, err := session.NewSession(&aws.Config{
+// 	Region: aws.String(region)})
+// if err != nil {
+// 	log.Fatal(err)
+// }
+
+// uploader := s3manager.NewUploader(sess)
+
+// _, err = uploader.Upload(&s3manager.UploadInput{
+// 	Bucket: aws.String(bucket),
+// 	Key:    aws.String(filename),
+// 	Body:   reader,
+// })
+
+// if err != nil {
+// 	fmt.Printf("Unable to upload %q to %q, %v", filename, bucket, err)
+// }
+
+// fmt.Printf("Successfully uploaded %q to %q\n", filename, bucket)

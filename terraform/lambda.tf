@@ -158,13 +158,12 @@ resource "aws_lambda_function" "logger_function" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        service_table = aws_dynamodb_table.service.name
         event_table = aws_dynamodb_table.event.name
       }
    }
@@ -219,8 +218,9 @@ resource "aws_lambda_function" "scheduler" {
         region = var.aws_region
         environment = var.environment
         service_table = aws_dynamodb_table.service.name
-        event_table = aws_dynamodb_table.event.name
         master_api_id = aws_api_gateway_rest_api.api_gateway_master.id
+        logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
+        service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }
    }
 }

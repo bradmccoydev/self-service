@@ -15,9 +15,9 @@ echo "Building Artifacts"
 # zip -r ./../build/microservice/ApiGatewayHandler/main.zip ./../build/microservice/ApiGatewayHandler/main
 # aws --region us-west-2 s3 cp ./../build/microservice/ApiGatewayHandler/main.zip s3://selfservice.bradmccoy.io/microservice/ApiGatewayHandler/main.zip
 
-GOOS=linux go build -o ./../build/microservice/ServiceInvoker/main ./../microservice/ServiceInvoker/main.go
-zip -r ./../build/microservice/ServiceInvoker/main.zip ./../build/microservice/ServiceInvoker/main
-aws --region us-west-2 s3 cp ./../build/microservice/ServiceInvoker/main.zip s3://selfservice.bradmccoy.io/microservice/ServiceInvoker/main.zip
+# GOOS=linux go build -o ./../build/microservice/ServiceInvoker/main ./../microservice/ServiceInvoker/main.go
+# zip -r ./../build/microservice/ServiceInvoker/main.zip ./../build/microservice/ServiceInvoker/main
+# aws --region us-west-2 s3 cp ./../build/microservice/ServiceInvoker/main.zip s3://selfservice.bradmccoy.io/microservice/ServiceInvoker/main.zip
 
 # GOOS=linux go build -o ./../build/microservice/ServiceMetadata/main ./../microservice/ServiceMetadata/main.go
 # zip -r ./../build/microservice/ServiceMetadata/main.zip ./../build/microservice/ServiceMetadata/main

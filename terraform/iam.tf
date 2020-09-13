@@ -348,6 +348,9 @@ resource "aws_iam_policy" "self_service_api_invoke_policy" {
             "Resource":[
                "${aws_api_gateway_rest_api.api_gateway.arn}/*",
                "${aws_api_gateway_rest_api.api_gateway_master.arn}/*",
+               "${aws_api_gateway_rest_api.api_gateway_master.arn}/*/POST/log",
+               "${aws_api_gateway_rest_api.api_gateway_master.arn}/*/POST/invokeService",
+               "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/POST/log",
                "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/POST/invokeService",
                "arn:aws:execute-api:us-west-2:142035491160:wz6j6e66o2/*/*/*/*"
             ]

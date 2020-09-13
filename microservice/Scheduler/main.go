@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -22,7 +23,6 @@ import (
 type Request struct {
 	ServiceID      string `json:"service_id"`
 	ServiceVersion string `json:"service_version"`
-	TrackingID     string `json:"tracking_id"`
 }
 
 type Service struct {
@@ -40,17 +40,21 @@ type Event struct {
 	ServiceVersion string `json:"service_version"`
 	Stage          string `json:"stage"`
 	EventType      string `json:"event_type"`
-	DateTime       string `json:"datetime"`
+	DateTime       string `json:"date_time"`
 	Message        string `json:"message"`
 }
 
 // Handler - the actual logic
 func Handler(request Request) (string, error) {
 	serviceTable := os.Getenv("service_table")
-	eventTable := os.Getenv("event_table")
 	region := os.Getenv("region")
 	masterAPIID := os.Getenv("master_api_id")
 	environment := os.Getenv("environment")
+	loggerEndpoint := os.Getenv("logger_endpoint")
+	serviceEndpoint := os.Getenv("service_endpoint")
+
+	fmt.Println(loggerEndpoint)
+	fmt.Println(serviceEndpoint)
 
 	if request.ServiceID == "" {
 		fmt.Printf("No service ID provided")
@@ -64,16 +68,9 @@ func Handler(request Request) (string, error) {
 
 	trackingID := GetUnixTimestamp()
 
-	LogEvent(
-		trackingID,
-		trackingID,
-		service.Service,
-		service.Version,
-		"Schedule",
-		"Log",
-		"2020-09-15",
-		service.Service+" scheduled",
-		eventTable)
+	message := url.QueryEscape(service.Service + " CW scheduled")
+	params := fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", trackingID, request.ServiceID, request.ServiceVersion, trackingID, "CloudwatchRule", "Log", message)
+	ApiPost(loggerEndpoint, params, region)
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -81,17 +78,6 @@ func Handler(request Request) (string, error) {
 
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-		LogEvent(
-			GetUnixTimestamp(),
-			trackingID,
-			service.Service,
-			service.Version,
-			"AWS Credentials Error",
-			"Error",
-			"2020-09-09",
-			err.Error(),
-			eventTable)
-		return "error", nil
 		panic("unable to load SDK config, " + err.Error())
 	}
 
@@ -100,44 +86,20 @@ func Handler(request Request) (string, error) {
 
 	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService?serviceId=%v&serviceVersion=%v&trackingId=%v", masterAPIID, region, environment, service.Service, service.Version, trackingID)
 	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
-
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-
 	req = req.WithContext(ctx)
 	signer := v4.NewSigner(sess.Config.Credentials)
 	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
-
-	if err != nil {
-		LogEvent(
-			GetUnixTimestamp(),
-			trackingID,
-			service.Service,
-			service.Version,
-			"API Error",
-			"Error",
-			"2020-09-09",
-			err.Error(),
-			eventTable)
-		fmt.Printf("failed to sign request: (%v)\n", err)
-		return "error", nil
-	}
-
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		LogEvent(
-			GetUnixTimestamp(),
-			trackingID,
-			service.Service,
-			service.Version,
-			"API Request Sent",
-			"Error",
-			"2020-09-08",
-			err.Error(),
-			eventTable)
-		fmt.Printf("failed to call remote service: (%v)\n", err)
+		message = url.QueryEscape("API Error : " + serviceEndpoint)
+		params = fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", GetUnixTimestamp(), request.ServiceID, request.ServiceVersion, trackingID, "APIGW", "Error", message)
+		ApiPost(loggerEndpoint, params, region)
+
+		fmt.Printf("failed to sign request: (%v)\n", err)
 		return "error", nil
 	}
 
@@ -145,32 +107,18 @@ func Handler(request Request) (string, error) {
 	body, _ := ioutil.ReadAll(res.Body)
 
 	if res.StatusCode != 200 {
-		LogEvent(
-			GetUnixTimestamp(),
-			trackingID,
-			service.Service,
-			service.Version,
-			"API Status",
-			"Error",
-			"2020-09-09",
-			string(body),
-			eventTable)
+		message = url.QueryEscape("API Error : " + serviceEndpoint + string(body))
+		params = fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", GetUnixTimestamp(), request.ServiceID, request.ServiceVersion, trackingID, "APIGW", "Error", message)
+		ApiPost(loggerEndpoint, params, region)
 		fmt.Printf("service returned a status not 200: (%d)\n", res.StatusCode)
 		return "error", nil
 	}
 
-	LogEvent(
-		GetUnixTimestamp(),
-		trackingID,
-		service.Service,
-		service.Version,
-		"API Request Sent",
-		"Log",
-		"2020-09-08",
-		"API GW Request Sent",
-		eventTable)
+	message = url.QueryEscape("API Request Sent: " + string(body))
+	params = fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", GetUnixTimestamp(), request.ServiceID, request.ServiceVersion, trackingID, "APIGW", "Log", message)
+	ApiPost(loggerEndpoint, params, region)
 
-	return "working", nil
+	return "Service Scheduled", nil
 }
 
 // Entrypoint by AWS Lambda
@@ -183,55 +131,46 @@ func GetUnixTimestamp() string {
 	return strconv.FormatInt(time, 10)
 }
 
-// LogEvent function that logs events
-func LogEvent(
-	id string,
-	trackingID string,
-	service string,
-	serviceVersion string,
-	stage string,
-	eventType string,
-	dateTime string,
-	message string,
-	tableName string) {
+func ApiPost(
+	url string,
+	params string,
+	region string) {
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
-	svc := dynamodb.New(sess)
-
-	item := Event{
-		ID:             id,
-		TrackingID:     trackingID,
-		Service:        service,
-		ServiceVersion: serviceVersion,
-		Stage:          stage,
-		EventType:      eventType,
-		DateTime:       dateTime,
-		Message:        message,
-	}
-
-	av, err := dynamodbattribute.MarshalMap(item)
-
+	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-		fmt.Println("Got error marshalling Log:")
-		fmt.Println(err.Error())
-		fmt.Println(av)
-		os.Exit(1)
+		panic("unable to load SDK config, " + err.Error())
 	}
 
-	input := &dynamodb.PutItemInput{
-		Item:      av,
-		TableName: aws.String(tableName),
-	}
+	cfg.Region = region
+	ctx := context.Background()
 
-	_, err = svc.PutItem(input)
+	URL := fmt.Sprintf("%v?%v", url, params)
+	fmt.Println(fmt.Sprintf("%v?%v", url, params))
+	var requestJSON = []byte(`{"service_id":"tst","service_version":"tst","tracking_id":"tst"}`)
+
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	req = req.WithContext(ctx)
+	signer := v4.NewSigner(sess.Config.Credentials)
+	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Println("Got error calling PutItem:")
-		fmt.Println(err.Error())
-		os.Exit(1)
+		panic("Error Logging, " + err.Error())
 	}
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	if res.StatusCode != 200 {
+		panic("service returned a status not 200: (%d)" + strconv.Itoa(res.StatusCode) + string(body))
+	}
+	fmt.Println(string(body))
+
 }
 
 func GetServiceDetails(service string, version string, tableName string) Service {

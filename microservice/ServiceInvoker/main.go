@@ -66,24 +66,26 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	fmt.Println("version: " + service.Version)
 	fmt.Println("trackingId: " + trackingID)
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	if service.EndpointType == "step_function" {
+		sess := session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		}))
 
-	svc := sfn.New(sess)
+		svc := sfn.New(sess)
 
-	params := &sfn.StartExecutionInput{
-		Input:           aws.String("{\"hello\":\"world\"}"),
-		Name:            aws.String(trackingID),
-		StateMachineArn: aws.String(service.Endpoint),
-	}
+		params := &sfn.StartExecutionInput{
+			//Input:           aws.String("{\"hello\":\"world\"}"),
+			Input:           aws.String(service.Parameters),
+			Name:            aws.String(trackingID),
+			StateMachineArn: aws.String(service.Endpoint),
+		}
 
-	// Example sending a request using the StartExecutionRequest method.
-	req, sfnResp := svc.StartExecutionRequest(params)
+		req, sfnResp := svc.StartExecutionRequest(params)
 
-	err := req.Send()
-	if err == nil { // resp is now filled
-		fmt.Println(sfnResp)
+		err := req.Send()
+		if err == nil {
+			fmt.Println(sfnResp)
+		}
 	}
 
 	// rawParam1, found := request.QueryParameters["param1"]
