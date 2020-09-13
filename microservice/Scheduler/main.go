@@ -23,6 +23,7 @@ import (
 type Request struct {
 	ServiceID      string `json:"service_id"`
 	ServiceVersion string `json:"service_version"`
+	Source         string `json:"source"`
 }
 
 type Service struct {
@@ -48,13 +49,9 @@ type Event struct {
 func Handler(request Request) (string, error) {
 	serviceTable := os.Getenv("service_table")
 	region := os.Getenv("region")
-	masterAPIID := os.Getenv("master_api_id")
-	environment := os.Getenv("environment")
 	loggerEndpoint := os.Getenv("logger_endpoint")
 	serviceEndpoint := os.Getenv("service_endpoint")
-
-	fmt.Println(loggerEndpoint)
-	fmt.Println(serviceEndpoint)
+	trackingID := GetUnixTimestamp()
 
 	if request.ServiceID == "" {
 		fmt.Printf("No service ID provided")
@@ -66,11 +63,11 @@ func Handler(request Request) (string, error) {
 		request.ServiceVersion,
 		serviceTable)
 
-	trackingID := GetUnixTimestamp()
-
 	message := url.QueryEscape(service.Service + " CW scheduled")
-	params := fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", trackingID, request.ServiceID, request.ServiceVersion, trackingID, "CloudwatchRule", "Log", message)
+	params := fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", trackingID, request.ServiceID, request.ServiceVersion, trackingID, request.Source, "Log", message)
 	ApiPost(loggerEndpoint, params, region)
+
+	// *******************
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -84,7 +81,7 @@ func Handler(request Request) (string, error) {
 	cfg.Region = region
 	ctx := context.Background()
 
-	URL := fmt.Sprintf("https://%v.execute-api.%v.amazonaws.com/%v/invokeService?serviceId=%v&serviceVersion=%v&trackingId=%v", masterAPIID, region, environment, service.Service, service.Version, trackingID)
+	URL := fmt.Sprintf("%v?serviceId=%v&serviceVersion=%v&trackingId=%v", serviceEndpoint, service.Service, service.Version, trackingID)
 	var requestJSON = []byte(fmt.Sprintf(`{"service_id":"%v","service_version":"%v","tracking_id":"%v"}`, service.Service, service.Version, trackingID))
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Accept", "application/json")
@@ -93,6 +90,8 @@ func Handler(request Request) (string, error) {
 	signer := v4.NewSigner(sess.Config.Credentials)
 	_, err = signer.Sign(req, nil, "execute-api", cfg.Region, time.Now())
 	res, err := http.DefaultClient.Do(req)
+
+	// *******************
 
 	if err != nil {
 		message = url.QueryEscape("API Error : " + serviceEndpoint)
@@ -114,7 +113,7 @@ func Handler(request Request) (string, error) {
 		return "error", nil
 	}
 
-	message = url.QueryEscape("API Request Sent: " + string(body))
+	message = url.QueryEscape("API Request Sent for service: " + request.ServiceID)
 	params = fmt.Sprintf("id=%v&serviceId=%v&serviceVersion=%v&trackingId=%v&stage=%v&eventType=%v&message=%v", GetUnixTimestamp(), request.ServiceID, request.ServiceVersion, trackingID, "APIGW", "Log", message)
 	ApiPost(loggerEndpoint, params, region)
 

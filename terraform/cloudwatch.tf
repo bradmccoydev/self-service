@@ -14,8 +14,9 @@ resource "aws_cloudwatch_event_target" "framework_test" {
     arn = aws_lambda_function.scheduler.arn
     input = <<DOC
     {
-        "service": "test",
-        "version": "1",
+        "service_id": "test",
+        "service_version": "1",
+        "source": "CloudwatchRule",
         "command": ["bin/console", "scheduled-task"]
     }
     DOC

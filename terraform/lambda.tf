@@ -218,7 +218,6 @@ resource "aws_lambda_function" "scheduler" {
         region = var.aws_region
         environment = var.environment
         service_table = aws_dynamodb_table.service.name
-        master_api_id = aws_api_gateway_rest_api.api_gateway_master.id
         logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
         service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }
