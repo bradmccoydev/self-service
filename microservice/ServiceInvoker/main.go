@@ -16,13 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sfn"
 )
 
-// type Request struct {
-// 	ServiceID      string `json:"service_id"`
-// 	ServiceVersion string `json:"service_version"`
-// 	TrackingID     string `json:"tracking_id"`
-// 	Body           string `json:"body"`
-// }
-
 type Service struct {
 	Service          string `json:"service"`
 	Title            string `json:"title"`
@@ -74,7 +67,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		svc := sfn.New(sess)
 
 		params := &sfn.StartExecutionInput{
-			//Input:           aws.String("{\"hello\":\"world\"}"),
 			Input:           aws.String(service.Parameters),
 			Name:            aws.String(trackingID),
 			StateMachineArn: aws.String(service.Endpoint),
@@ -88,21 +80,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}
 	}
 
-	// rawParam1, found := request.QueryParameters["param1"]
-	// if found {
-	// 	// query parameters are typically URL encoded so to get the value
-	// 	value, err := url.QueryUnescape(rawParam1)
-	// 	if nil != err {
-	// 		return handleError(err)
-	// 	}
-	// 	// ... now use the value as needed
-	// }
-
-	// body, err := base64.StdEncoding.DecodeString(request.Body)
-	// fmt.Printf(string(body))
-
-	//fmt.Printf(request.Body)
-
 	resp := &Event{
 		Service: "Service Invoked",
 	}
@@ -112,65 +89,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, err
 	}
 	return events.APIGatewayProxyResponse{Body: string(responseBody), StatusCode: 200}, nil
-
-	// fmt.Println("Received body: ", request)
-	// //fmt.Println("Received body: ", request.Body)
-
-	// fmt.Printf("Processing request data for request %s.\n", request.RequestContext.RequestID)
-	// fmt.Printf("Body size = %d.\n", len(request.Body))
-
-	// fmt.Println("Headers:")
-	// for key, value := range request.Headers {
-	// 	fmt.Printf("    %s: %s\n", key, value)
-	// }
-
-	// code := 200
-	// response, error := json.Marshal(Request{Response: "Hello, " + name.Body})
-	// if error != nil {
-	// 	log.Println(error)
-	// 	response = []byte("Internal Server Error")
-	// 	code = 500
-	// }
-
-	// fmt.Printf("****")
-	// fmt.Printf(request.ServiceID)
-	// fmt.Printf(request.ServiceVersion)
-	// fmt.Printf(request.TrackingID)
-	// fmt.Printf("###")
-
-	// if request.ServiceID == "" {
-	// 	fmt.Printf("No service ID provided")
-	// 	return "No service ID provided", nil
-	// }
-
-	// service := GetServiceDetails(
-	// 	request.ServiceID,
-	// 	request.ServiceVersion,
-	// 	serviceTable)
-
-	// LogEvent(
-	// 	GetUnixTimestamp(),
-	// 	request.TrackingID,
-	// 	service.Service,
-	// 	service.Version,
-	// 	"Schedule",
-	// 	"Log",
-	// 	"2020-09-15",
-	// 	service.Service+" invoked",
-	// 	eventTable)
-
-	// fmt.Printf("Do Logic")
-
-	// LogEvent(
-	// 	GetUnixTimestamp(),
-	// 	request.TrackingID,
-	// 	service.Service,
-	// 	service.Version,
-	// 	"Service Executed",
-	// 	"Log",
-	// 	"2020-09-08",
-	// 	"Service Request Sent",
-	// 	eventTable)
 
 }
 
