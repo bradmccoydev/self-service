@@ -114,6 +114,15 @@ resource "aws_iam_user" "developer" {
   }
 }
 
+resource "aws_iam_user_login_profile" "developer" {
+  user    = aws_iam_user.developer.name
+  pgp_key = "keybase:bmccoy"
+}
+
+output "password" {
+  value = aws_iam_user_login_profile.example.encrypted_password
+}
+
 resource "aws_iam_access_key" "developer_iam" {
   user = aws_iam_user.developer.name
 }
