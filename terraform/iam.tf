@@ -139,9 +139,11 @@ resource "aws_iam_policy" "developer_policy" {
             "Effect": "Allow",
             "Action": [
                 "secretsmanager:GetSecretValue",
-                "secretsmanager:DescribeSecret"
+                "secretsmanager:DescribeSecret",
+                "iam:CreateAccessKey"
             ],
             "Resource": [
+                "arn:aws:iam::142035491160:user/wonboyn@gmail.com",
                 "${aws_secretsmanager_secret.app_secret.arn}"
             ]
         },
