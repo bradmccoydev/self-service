@@ -120,7 +120,7 @@ resource "aws_iam_user_login_profile" "developer" {
 }
 
 output "password" {
-  value = aws_iam_user_login_profile.example.encrypted_password
+  value = aws_iam_user_login_profile.developer.encrypted_password
 }
 
 resource "aws_iam_access_key" "developer_iam" {
@@ -140,7 +140,8 @@ resource "aws_iam_policy" "developer_policy" {
             "Action": [
                 "secretsmanager:GetSecretValue",
                 "secretsmanager:DescribeSecret",
-                "iam:CreateAccessKey"
+                "iam:CreateAccessKey",
+                "iam:ListAccessKeys"
             ],
             "Resource": [
                 "arn:aws:iam::142035491160:user/wonboyn@gmail.com",
