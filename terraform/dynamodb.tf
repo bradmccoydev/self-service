@@ -2,8 +2,24 @@
 # DynamoDB
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_dynamodb_table" "service" {
-  name           = "service"
+resource "aws_dynamodb_table" "application" {
+  name           = "application"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "application"
+  range_key      = "version"
+  tags = var.tags
+    attribute {
+    name = "application"
+    type = "S"
+  }
+    attribute {
+    name = "version"
+    type = "S"
+  }
+}
+
+resource "aws_dynamodb_table" "service_catalog" {
+  name           = "service_catalog"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "service"
   range_key      = "version"

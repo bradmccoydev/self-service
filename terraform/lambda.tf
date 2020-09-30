@@ -130,7 +130,8 @@ resource "aws_lambda_function" "service_invoker" {
         region = var.aws_region
         environment = var.environment
         sns_topic_arn = aws_sns_topic.sns_submission.arn
-        service_table = aws_dynamodb_table.service.name
+        service_catalog_table = aws_dynamodb_table.service_catalog.name
+        application_table = aws_dynamodb_table.application.name
         event_table = aws_dynamodb_table.event.name
       }
    }
@@ -190,7 +191,8 @@ resource "aws_lambda_function" "service_metadata" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        service_table = aws_dynamodb_table.service.name
+        service_catalog_table = aws_dynamodb_table.service_catalog.name
+        application_table = aws_dynamodb_table.application.name
         event_table = aws_dynamodb_table.event.name
       }
    }
@@ -217,7 +219,8 @@ resource "aws_lambda_function" "scheduler" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        service_table = aws_dynamodb_table.service.name
+        service_catalog_table = aws_dynamodb_table.service_catalog.name
+        application_table = aws_dynamodb_table.application.name
         logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
         service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }
