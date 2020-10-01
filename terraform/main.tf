@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 terraform {
   backend "s3" {
-    bucket         = "selfservice.bradmccoy.io"
+    bucket         = "terraform.bradmccoy.io"
     key            = "global/s3/terraform.tfstate"
     region         = "us-west-2"
     dynamodb_table = "terraform_self_service_locks"
