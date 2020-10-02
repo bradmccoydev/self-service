@@ -62,6 +62,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "logs:CreateLogStream",
                 "dax:*",
                 "kms:*",
+                "sqs:*
                 "lambda:*",
                 "logs:CreateLogGroup",
                 "logs:PutLogEvents"
@@ -87,14 +88,6 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Action": "s3:*",
             "Resource": [
                 "${aws_s3_bucket.terraform_state.arn}"
-            ]
-        },
-        {
-            "Sid": "VisualEditor4",
-            "Effect": "Allow",
-            "Action": "sqs:*",
-            "Resource": [
-                "${aws_sqs_queue.submission_queue.arn}"
             ]
         }
     ]
@@ -163,6 +156,7 @@ resource "aws_iam_policy" "developer_policy" {
                 "${aws_lambda_function.slack_slash_command_staging.arn}",
                 "${aws_lambda_function.slack_slash_command.arn}",
                 "${aws_lambda_function.process_slack_submission.arn}",
+                "${aws_lambda_function.slack_dynamic_data_source.arn}",
                 "${aws_lambda_function.service_invoker.arn}",
                 "${aws_sqs_queue.submission_queue.arn}"
             ]
