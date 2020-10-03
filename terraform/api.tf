@@ -77,9 +77,9 @@ resource "aws_api_gateway_rest_api" "api_gateway_master" {
 data "template_file" api_swagger_master{
   template = file("./master-swagger.yaml")
   vars = {
-    ServiceInvoker = aws_lambda_function.service_invoker.invoke_arn
-    ServiceMetadata = aws_lambda_function.service_metadata.invoke_arn
-    Logger = aws_lambda_function.logger_function.invoke_arn
+    ServiceInvoker = aws_lambda_function.application_controller.invoke_arn
+    ServiceMetadata = aws_lambda_function.ui_controller.invoke_arn
+    Logger = aws_lambda_function.logging_consumer.invoke_arn
   }
 }
 
@@ -105,7 +105,7 @@ resource "aws_api_gateway_method_settings" "general_settings_master" {
 resource "aws_lambda_permission" "apigw_permission_service_metadata" {
    statement_id  = "AllowAPIGatewayInvoke"
    action        = "lambda:InvokeFunction"
-   function_name = aws_lambda_function.service_metadata.function_name
+   function_name = aws_lambda_function.ui_controller.function_name
    principal     = "apigateway.amazonaws.com"
    source_arn = "${aws_api_gateway_rest_api.api_gateway_master.execution_arn}/*/*"
 }
@@ -113,7 +113,7 @@ resource "aws_lambda_permission" "apigw_permission_service_metadata" {
 resource "aws_lambda_permission" "apigw_permission_service_invoker" {
    statement_id  = "AllowAPIGatewayInvoke"
    action        = "lambda:InvokeFunction"
-   function_name = aws_lambda_function.service_invoker.function_name
+   function_name = aws_lambda_function.application_controller.function_name
    principal     = "apigateway.amazonaws.com"
    source_arn = "${aws_api_gateway_rest_api.api_gateway_master.execution_arn}/*/*"
 }
@@ -121,7 +121,7 @@ resource "aws_lambda_permission" "apigw_permission_service_invoker" {
 resource "aws_lambda_permission" "apigw_permission_logger_function" {
    statement_id  = "AllowAPIGatewayInvoke"
    action        = "lambda:InvokeFunction"
-   function_name = aws_lambda_function.logger_function.function_name
+   function_name = aws_lambda_function.logging_consumer.function_name
    principal     = "apigateway.amazonaws.com"
    source_arn = "${aws_api_gateway_rest_api.api_gateway_master.execution_arn}/*/*"
 }

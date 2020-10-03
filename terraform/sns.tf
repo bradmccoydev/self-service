@@ -28,8 +28,8 @@ EOF
 resource "aws_sns_topic_subscription" "submission_subscription" {
   topic_arn            = aws_sns_topic.sns_submission.arn
   protocol             = "sqs"
-  endpoint             = aws_sqs_queue.submission_queue.arn
+  endpoint             = aws_sqs_queue.application_queue.arn
   depends_on = [
-    aws_sqs_queue.submission_queue
+    aws_sqs_queue.application_queue
   ]
 }

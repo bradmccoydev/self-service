@@ -1,29 +1,33 @@
-resource "aws_sqs_queue" "submission_dlq" {
+# ---------------------------------------------------------------------------------------------------------------------
+# Application queue
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_sqs_queue" "application_dlq" {
   name = "submission_dlq"
 }
 
-resource "aws_sqs_queue" "submission_queue" {
+resource "aws_sqs_queue" "application_queue" {
   name                  = "submission_queue"
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.submission_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.application_dlq.arn
     maxReceiveCount     = 4
   })
   visibility_timeout_seconds = 300
   tags     = var.tags
 }
 
-resource "aws_sqs_queue_policy" "submisison_queue_policy" {
-  queue_url = aws_sqs_queue.submission_queue.id
-  policy    = data.aws_iam_policy_document.submission_queue_iam_policy.json
+resource "aws_sqs_queue_policy" "application_queue_policy" {
+  queue_url = aws_sqs_queue.application_queue.id
+  policy    = data.aws_iam_policy_document.application_queue_iam_policy.json
 }
 
-data "aws_iam_policy_document" "submission_queue_iam_policy" {
+data "aws_iam_policy_document" "application_queue_iam_policy" {
   policy_id = "SQSSendAccess"
   statement {
     sid       = "SQSSendAccessStatement"
     effect    = "Allow"
     actions   = ["SQS:SendMessage"]
-    resources = [aws_sqs_queue.submission_queue.arn]
+    resources = [aws_sqs_queue.application_queue.arn]
     principals {
       identifiers = ["*"]
       type        = "*"
@@ -34,4 +38,22 @@ data "aws_iam_policy_document" "submission_queue_iam_policy" {
       variable = "aws:SourceArn"
     }
   }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Logging queue
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_sqs_queue" "logging_dlq" {
+  name = "logging_dlq"
+}
+
+resource "aws_sqs_queue" "logging_queue" {
+  name                  = "logging_queue"
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.logging_dlq.arn
+    maxReceiveCount     = 4
+  })
+  visibility_timeout_seconds = 300
+  tags     = var.tags
 }

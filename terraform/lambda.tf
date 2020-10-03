@@ -113,9 +113,9 @@ resource "aws_cloudwatch_log_group" "slack_dynamic_data_source_logs" {
 # Self Service Lambdas
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "service_invoker" {
-    function_name = "ServiceInvoker"
-    description = "Endpoint Service Invoker"
+resource "aws_lambda_function" "application_consumer" {
+    function_name = "ApplicationConsumer"
+    description = "Application Consumer Endpoint Service Invoker"
     role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/ServiceInvoker/main"
     runtime       = "go1.x"
@@ -123,7 +123,7 @@ resource "aws_lambda_function" "service_invoker" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceInvoker/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
     environment {
       variables = {
         secret_id = var.secret_id
@@ -137,21 +137,79 @@ resource "aws_lambda_function" "service_invoker" {
    }
 }
 
-resource "aws_lambda_event_source_mapping" "submission_event_source_mapping" {
+resource "aws_lambda_event_source_mapping" "application_event_source_mapping" {
   batch_size        = 1
-  event_source_arn  = aws_sqs_queue.submission_queue.arn
+  event_source_arn  = aws_sqs_queue.application_queue.arn
   enabled           = false
-  function_name     = aws_lambda_function.service_invoker.arn
+  function_name     = aws_lambda_function.application_consumer.arn
 }
 
-resource "aws_cloudwatch_log_group" "service_invoker_logs" {
-  name              = "/aws/lambda/${aws_lambda_function.service_invoker.function_name}"
+resource "aws_cloudwatch_log_group" "application_consumer_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.application_consumer.function_name}"
   retention_in_days = 7
 }
 
-resource "aws_lambda_function" "logger_function" {
-    function_name = "Logger"
-    description = "Logger"
+resource "aws_lambda_function" "application_controller" {
+    function_name = "ApplicationController"
+    description = "ApplicationController"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/ServiceInvoker/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/ServiceInvoker/main.zip"
+    memory_size = 256
+    timeout = 30
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
+    environment {
+      variables = {
+        secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
+        sns_topic_arn = aws_sns_topic.sns_submission.arn
+        service_catalog_table = aws_dynamodb_table.service_catalog.name
+        application_table = aws_dynamodb_table.application.name
+        event_table = aws_dynamodb_table.event.name
+      }
+   }
+}
+
+resource "aws_cloudwatch_log_group" "application_controller_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.application_controller.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_lambda_function" "cicd_controller" {
+    function_name = "CiCdController"
+    description = "CI/CD Controller"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/ServiceInvoker/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/ServiceInvoker/main.zip"
+    memory_size = 256
+    timeout = 30
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
+    environment {
+      variables = {
+        secret_id = var.secret_id
+        region = var.aws_region
+        environment = var.environment
+        sns_topic_arn = aws_sns_topic.sns_submission.arn
+        service_catalog_table = aws_dynamodb_table.service_catalog.name
+        application_table = aws_dynamodb_table.application.name
+        event_table = aws_dynamodb_table.event.name
+      }
+   }
+}
+
+resource "aws_cloudwatch_log_group" "cicd_controller_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.cicd_controller.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_lambda_function" "logging_consumer" {
+    function_name = "LoggingConsumer"
+    description = "LoggingConsumer"
     role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/Logger/main"
     runtime       = "go1.x"
@@ -159,7 +217,7 @@ resource "aws_lambda_function" "logger_function" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Logger/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket
@@ -170,14 +228,21 @@ resource "aws_lambda_function" "logger_function" {
    }
 }
 
+resource "aws_lambda_event_source_mapping" "logging_event_source_mapping" {
+  batch_size        = 1
+  event_source_arn  = aws_sqs_queue.logging_queue.arn
+  enabled           = false
+  function_name     = aws_lambda_function.logging_consumer.arn
+}
+
 resource "aws_cloudwatch_log_group" "logger_function_logs" {
-  name              = "/aws/lambda/${aws_lambda_function.logger_function.function_name}"
+  name              = "/aws/lambda/${aws_lambda_function.logging_consumer.function_name}"
   retention_in_days = 7
 }
 
-resource "aws_lambda_function" "service_metadata" {
-    function_name = "ServiceMetadata"
-    description = "Service Metadata"
+resource "aws_lambda_function" "ui_controller" {
+    function_name = "UiController"
+    description = "UiController"
     role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/ServiceMetadata/main"
     runtime       = "go1.x"
@@ -185,7 +250,7 @@ resource "aws_lambda_function" "service_metadata" {
     s3_key = "microservice/ServiceMetadata/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ServiceMetadata/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
     environment {
       variables = {
         bucket = var.application_s3_bucket
@@ -199,13 +264,13 @@ resource "aws_lambda_function" "service_metadata" {
 }
 
 resource "aws_cloudwatch_log_group" "service_metadata_logs" {
-  name              = "/aws/lambda/${aws_lambda_function.service_metadata.function_name}"
+  name              = "/aws/lambda/${aws_lambda_function.ui_controller.function_name}"
   retention_in_days = 7
 }
 
-resource "aws_lambda_function" "scheduler" {
-    function_name = "Scheduler"
-    description = "Scheduled"
+resource "aws_lambda_function" "scheduling_producer" {
+    function_name = "SchedulingProducer"
+    description = "Scheduling Producer"
     role          = aws_iam_role.self_service_role.arn
     handler       = "build/microservice/Scheduler/main"
     runtime       = "go1.x"
@@ -228,6 +293,6 @@ resource "aws_lambda_function" "scheduler" {
 }
 
 resource "aws_cloudwatch_log_group" "scheduler" {
-  name              = "/aws/lambda/${aws_lambda_function.scheduler.function_name}"
+  name              = "/aws/lambda/${aws_lambda_function.scheduling_producer.function_name}"
   retention_in_days = 7
 }
