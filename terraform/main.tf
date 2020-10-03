@@ -50,6 +50,12 @@ resource "aws_kms_key" "athena_kms_key" {
 # Secrets
 # ---------------------------------------------------------------------------------------------------------------------
 
-# resource "aws_secretsmanager_secret" "app_secret" {
-#   name = var.secret_id
-# }
+resource "random_string" "random" {
+  length = 3
+  special = false
+  upper = false
+}
+
+resource "aws_secretsmanager_secret" "app_secret" {
+  name = "${var.secret_id}-${random_string.random}"
+}

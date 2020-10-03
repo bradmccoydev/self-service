@@ -86,14 +86,6 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "${aws_dynamodb_table.event.arn}",
                 "${aws_dynamodb_table.event.arn}/*"
             ]
-        },
-        {
-            "Sid": "VisualEditor3",
-            "Effect": "Allow",
-            "Action": "s3:*",
-            "Resource": [
-                "${aws_s3_bucket.terraform_state.arn}"
-            ]
         }
     ]
 }
