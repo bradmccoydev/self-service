@@ -3,7 +3,8 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_sqs_queue" "application_dlq" {
-  name = "submission_dlq"
+  name = "submission_dlq.fifo"
+  fifo_queue                  = true
 }
 
 resource "aws_sqs_queue" "application_queue" {
@@ -46,7 +47,8 @@ resource "aws_sqs_queue" "application_queue" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_sqs_queue" "logging_dlq" {
-  name = "logging_dlq"
+  name = "logging_dlq.fifo"
+  fifo_queue                  = true
 }
 
 resource "aws_sqs_queue" "logging_queue" {
