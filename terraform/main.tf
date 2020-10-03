@@ -11,20 +11,20 @@ terraform {
   }
 }
 
-resource "aws_s3_bucket" "terraform_state" {
-  bucket = var.application_s3_bucket
-  tags     = var.tags
-  versioning {
-    enabled = true
-  }
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-}
+# resource "aws_s3_bucket" "terraform_state" {
+#   bucket = var.application_s3_bucket
+#   tags     = var.tags
+#   versioning {
+#     enabled = true
+#   }
+#   server_side_encryption_configuration {
+#     rule {
+#       apply_server_side_encryption_by_default {
+#         sse_algorithm = "AES256"
+#       }
+#     }
+#   }
+# }
 
 resource "aws_dynamodb_table" "terraform_self_service_locks" {
   name         = "terraform_self_service_locks"
@@ -50,6 +50,6 @@ resource "aws_kms_key" "athena_kms_key" {
 # Secrets
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_secretsmanager_secret" "app_secret" {
-  name = var.secret_id
-}
+# resource "aws_secretsmanager_secret" "app_secret" {
+#   name = var.secret_id
+# }

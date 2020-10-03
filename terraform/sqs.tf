@@ -7,7 +7,7 @@ resource "aws_sqs_queue" "application_dlq" {
 }
 
 resource "aws_sqs_queue" "application_queue" {
-  name                  = "application_queue"
+  name                  = "application_queue.fifo"
   fifo_queue                  = true
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.application_dlq.arn
@@ -50,7 +50,7 @@ resource "aws_sqs_queue" "logging_dlq" {
 }
 
 resource "aws_sqs_queue" "logging_queue" {
-  name                  = "logging_queue"
+  name                  = "logging_queue.fifo"
   fifo_queue                  = true
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.logging_dlq.arn
