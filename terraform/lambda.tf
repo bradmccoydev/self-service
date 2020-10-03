@@ -140,7 +140,7 @@ resource "aws_lambda_function" "application_consumer" {
 resource "aws_lambda_event_source_mapping" "application_event_source_mapping" {
   batch_size        = 1
   event_source_arn  = aws_sqs_queue.application_queue.arn
-  enabled           = false
+  enabled           = true
   function_name     = aws_lambda_function.application_consumer.arn
 }
 
@@ -231,7 +231,7 @@ resource "aws_lambda_function" "logging_consumer" {
 resource "aws_lambda_event_source_mapping" "logging_event_source_mapping" {
   batch_size        = 1
   event_source_arn  = aws_sqs_queue.logging_queue.arn
-  enabled           = false
+  enabled           = true
   function_name     = aws_lambda_function.logging_consumer.arn
 }
 

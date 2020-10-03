@@ -7,7 +7,7 @@ resource "aws_sqs_queue" "application_dlq" {
 }
 
 resource "aws_sqs_queue" "application_queue" {
-  name                  = "submission_queue"
+  name                  = "application_queue"
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.application_dlq.arn
     maxReceiveCount     = 4
@@ -16,29 +16,29 @@ resource "aws_sqs_queue" "application_queue" {
   tags     = var.tags
 }
 
-resource "aws_sqs_queue_policy" "application_queue_policy" {
-  queue_url = aws_sqs_queue.application_queue.id
-  policy    = data.aws_iam_policy_document.application_queue_iam_policy.json
-}
+# resource "aws_sqs_queue_policy" "application_queue_policy" {
+#   queue_url = aws_sqs_queue.application_queue.id
+#   policy    = data.aws_iam_policy_document.application_queue_iam_policy.json
+# }
 
-data "aws_iam_policy_document" "application_queue_iam_policy" {
-  policy_id = "SQSSendAccess"
-  statement {
-    sid       = "SQSSendAccessStatement"
-    effect    = "Allow"
-    actions   = ["SQS:SendMessage"]
-    resources = [aws_sqs_queue.application_queue.arn]
-    principals {
-      identifiers = ["*"]
-      type        = "*"
-    }
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_sns_topic.sns_submission.arn]
-      variable = "aws:SourceArn"
-    }
-  }
-}
+# data "aws_iam_policy_document" "application_queue_iam_policy" {
+#   policy_id = "SQSSendAccess"
+#   statement {
+#     sid       = "SQSSendAccessStatement"
+#     effect    = "Allow"
+#     actions   = ["SQS:SendMessage"]
+#     resources = [aws_sqs_queue.application_queue.arn]
+#     principals {
+#       identifiers = ["*"]
+#       type        = "*"
+#     }
+#     condition {
+#       test     = "ArnEquals"
+#       values   = [aws_sns_topic.sns_submission.arn]
+#       variable = "aws:SourceArn"
+#     }
+#   }
+# }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Logging queue

@@ -59,13 +59,18 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "ec2:CreateNetworkInterface",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DeleteNetworkInterface",
-                "logs:CreateLogStream",
+                "sqs:SendMessage",
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:ChangeMessageVisibility",
                 "dax:*",
                 "kms:*",
                 "sqs:*
                 "lambda:*",
                 "logs:CreateLogGroup",
-                "logs:PutLogEvents"
+                "logs:PutLogEvents",
+                "logs:CreateLogStream",
             ],
             "Resource": "*"
         },
