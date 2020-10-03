@@ -20,7 +20,6 @@ resource "aws_lambda_function" "slack_slash_command_staging" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        sns_topic_arn = aws_sns_topic.sns_submission.arn
       }
     }
 }
@@ -46,7 +45,6 @@ resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
       secret_id = var.secret_id
       region = var.aws_region
       environment = var.environment
-      sns_topic_arn = aws_sns_topic.sns_submission.arn
       api_gateway = aws_api_gateway_deployment.api_gateway_deployment_master.id
     }
    }
@@ -73,7 +71,6 @@ resource "aws_lambda_function" "process_slack_submission" {
       secret_id = var.secret_id
       region = var.aws_region
       environment = var.environment
-      sns_topic_arn = aws_sns_topic.sns_submission.arn
     }
    }
 }
@@ -99,7 +96,6 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        sns_topic_arn = aws_sns_topic.sns_submission.arn
       }
    }
 }
@@ -129,7 +125,6 @@ resource "aws_lambda_function" "application_consumer" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        sns_topic_arn = aws_sns_topic.sns_submission.arn
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         event_table = aws_dynamodb_table.event.name
@@ -165,7 +160,6 @@ resource "aws_lambda_function" "application_controller" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        sns_topic_arn = aws_sns_topic.sns_submission.arn
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         event_table = aws_dynamodb_table.event.name
@@ -194,7 +188,6 @@ resource "aws_lambda_function" "cicd_controller" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        sns_topic_arn = aws_sns_topic.sns_submission.arn
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         event_table = aws_dynamodb_table.event.name
