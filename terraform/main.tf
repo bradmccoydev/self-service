@@ -57,5 +57,5 @@ resource "random_string" "random" {
 }
 
 resource "aws_secretsmanager_secret" "app_secret" {
-  name = "${var.secret_id}-${random_string.random}"
+  name = "${var.secret_id}-${random_string.random.result}"
 }
