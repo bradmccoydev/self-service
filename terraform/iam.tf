@@ -66,7 +66,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "sqs:ChangeMessageVisibility",
                 "dax:*",
                 "kms:*",
-                "sqs:*
+                "sqs:*",
                 "lambda:*",
                 "logs:CreateLogGroup",
                 "logs:PutLogEvents",
