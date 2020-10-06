@@ -47,8 +47,8 @@ type Event struct {
 
 // Handler - the actual logic
 func Handler(request Request) (string, error) {
-	serviceTable := os.Getenv("service_table")
 	region := os.Getenv("region")
+	serviceTable := os.Getenv("application_table")
 	loggerEndpoint := os.Getenv("logger_endpoint")
 	serviceEndpoint := os.Getenv("service_endpoint")
 	trackingID := GetUnixTimestamp()
