@@ -9,7 +9,7 @@ resource "aws_dynamodb_table" "application" {
   range_key      = "version"
   tags = var.tags
     attribute {
-    name = "application"
+    name = "id"
     type = "S"
   }
     attribute {
