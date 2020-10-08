@@ -127,9 +127,8 @@ resource "aws_lambda_function" "application_consumer" {
         environment = var.environment
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
-        event_table = aws_dynamodb_table.event.name
-        application_queue = aws_sqs_queue.application_queue
-        logging_queue = aws_sqs_queue.logging_queue
+        application_queue = aws_sqs_queue.application_queue.id
+        logging_queue = aws_sqs_queue.logging_queue.id
       }
    }
 }
@@ -164,9 +163,8 @@ resource "aws_lambda_function" "application_controller" {
         environment = var.environment
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
-        event_table = aws_dynamodb_table.event.name
-        application_queue = aws_sqs_queue.application_queue
-        logging_queue = aws_sqs_queue.logging_queue
+        application_queue = aws_sqs_queue.application_queue.id
+        logging_queue = aws_sqs_queue.logging_queue.id
       }
    }
 }
@@ -194,7 +192,6 @@ resource "aws_lambda_function" "cicd_controller" {
         environment = var.environment
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
-        event_table = aws_dynamodb_table.event.name
       }
    }
 }
@@ -220,9 +217,8 @@ resource "aws_lambda_function" "logging_consumer" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        event_table = aws_dynamodb_table.event.name
-        application_queue = aws_sqs_queue.application_queue
-        logging_queue = aws_sqs_queue.logging_queue
+        application_queue = aws_sqs_queue.application_queue.id
+        logging_queue = aws_sqs_queue.logging_queue.id
       }
    }
 }
@@ -255,10 +251,9 @@ resource "aws_lambda_function" "metrics_consumer" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        event_table = aws_dynamodb_table.event.name
-        application_queue = aws_sqs_queue.application_queue
-        logging_queue = aws_sqs_queue.logging_queue
-        metrics_queue = aws_sqs_queue.metrics_queue
+        application_queue = aws_sqs_queue.application_queue.id
+        logging_queue = aws_sqs_queue.logging_queue.id
+        metrics_queue = aws_sqs_queue.metrics_queue.id
       }
    }
 }
@@ -293,7 +288,6 @@ resource "aws_lambda_function" "ui_controller" {
         environment = var.environment
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
-        event_table = aws_dynamodb_table.event.name
       }
    }
 }
@@ -321,8 +315,8 @@ resource "aws_lambda_function" "scheduling_producer" {
         environment = var.environment
         service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
-        application_queue = aws_sqs_queue.application_queue
-        logging_queue = aws_sqs_queue.logging_queue
+        application_queue = aws_sqs_queue.application_queue.id
+        logging_queue = aws_sqs_queue.logging_queue.id
         logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
         service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }

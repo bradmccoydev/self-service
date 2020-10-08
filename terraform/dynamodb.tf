@@ -5,7 +5,7 @@
 resource "aws_dynamodb_table" "application" {
   name           = "application"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "application"
+  hash_key       = "id"
   range_key      = "version"
   tags = var.tags
     attribute {
@@ -30,17 +30,6 @@ resource "aws_dynamodb_table" "service_catalog" {
   }
     attribute {
     name = "version"
-    type = "S"
-  }
-}
-
-resource "aws_dynamodb_table" "event" {
-  name           = "event"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
-  tags = var.tags
-    attribute {
-    name = "id"
     type = "S"
   }
 }

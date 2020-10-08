@@ -82,9 +82,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "${aws_dynamodb_table.service_catalog.arn}",
                 "${aws_dynamodb_table.service_catalog.arn}/*",
                 "${aws_dynamodb_table.application.arn}",
-                "${aws_dynamodb_table.application.arn}/*",
-                "${aws_dynamodb_table.event.arn}",
-                "${aws_dynamodb_table.event.arn}/*"
+                "${aws_dynamodb_table.application.arn}/*"
             ]
         }
     ]
@@ -217,9 +215,7 @@ resource "aws_iam_role_policy_attachment" "self_service_api_invoke_attachment" {
 #                 "${aws_dynamodb_table.service_catalog.arn}",
 #                 "${aws_dynamodb_table.service_catalog.arn}/*",
 #                 "${aws_dynamodb_table.application.arn}",
-#                 "${aws_dynamodb_table.application.arn}/*",
-#                 "${aws_dynamodb_table.event.arn}",
-#                 "${aws_dynamodb_table.event.arn}/*"
+#                 "${aws_dynamodb_table.application.arn}/*"
 #             ]
 #         },
 #         {
