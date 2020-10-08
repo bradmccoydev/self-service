@@ -61,3 +61,23 @@ resource "aws_sqs_queue" "logging_queue" {
   visibility_timeout_seconds = 300
   tags     = var.tags
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Metrics queue
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_sqs_queue" "metrics_dlq" {
+  name = "metrics_dlq.fifo"
+  fifo_queue                  = true
+}
+
+resource "aws_sqs_queue" "metrics_queue" {
+  name                  = "metrics_queue.fifo"
+  fifo_queue                  = true
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.metrics_dlq.arn
+    maxReceiveCount     = 4
+  })
+  visibility_timeout_seconds = 300
+  tags     = var.tags
+}

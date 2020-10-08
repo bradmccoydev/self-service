@@ -26,14 +26,14 @@ type Response struct {
 }
 
 type Event struct {
-	ID             string `json:"id"`
-	TrackingID     string `json:"tracking_id"`
-	Service        string `json:"service"`
-	ServiceVersion string `json:"service_version"`
-	Stage          string `json:"stage"`
-	EventType      string `json:"event_type"`
-	DateTime       string `json:"date_time"`
-	Message        string `json:"message"`
+	ID          string `json:"id"`
+	TrackingID  string `json:"tracking_id"`
+	Application string `json:"application"`
+	Version     string `json:"version"`
+	Stage       string `json:"stage"`
+	EventType   string `json:"event_type"`
+	DateTime    string `json:"date_time"`
+	Message     string `json:"message"`
 }
 
 // Handler - the actual logic
@@ -101,8 +101,8 @@ func GetUnixTimestamp() string {
 func LogEvent(
 	id string,
 	trackingID string,
-	service string,
-	serviceVersion string,
+	application string,
+	version string,
 	stage string,
 	eventType string,
 	dateTime string,
@@ -116,14 +116,14 @@ func LogEvent(
 	svc := dynamodb.New(sess)
 
 	item := Event{
-		ID:             id,
-		TrackingID:     trackingID,
-		Service:        service,
-		ServiceVersion: serviceVersion,
-		Stage:          stage,
-		EventType:      eventType,
-		DateTime:       dateTime,
-		Message:        message,
+		ID:          id,
+		TrackingID:  trackingID,
+		Application: application,
+		Version:     version,
+		Stage:       stage,
+		EventType:   eventType,
+		DateTime:    dateTime,
+		Message:     message,
 	}
 
 	av, err := dynamodbattribute.MarshalMap(item)
