@@ -59,20 +59,25 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "ec2:CreateNetworkInterface",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DeleteNetworkInterface",
-                "sqs:SendMessage",
-                "sqs:ReceiveMessage",
-                "sqs:DeleteMessage",
-                "sqs:GetQueueAttributes",
-                "sqs:ChangeMessageVisibility",
                 "dax:*",
                 "kms:*",
-                "sqs:*",
                 "lambda:*",
                 "logs:CreateLogGroup",
                 "logs:PutLogEvents",
                 "logs:CreateLogStream"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "Sqs",
+            "Effect": "Allow",
+            "Action": "sqs:*",
+            "Resource": [
+                "${aws_sqs_queue.metrics_queue.arn}",
+                "${aws_sqs_queue.metrics_dlq.arn}",
+                "${aws_sqs_queue.logging_queue.arn}",
+                "${aws_sqs_queue.logging_dlq.arn}"
+            ]
         },
         {
             "Sid": "VisualEditor2",
