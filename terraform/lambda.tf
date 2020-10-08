@@ -239,6 +239,42 @@ resource "aws_cloudwatch_log_group" "logger_function_logs" {
   retention_in_days = 7
 }
 
+resource "aws_lambda_function" "metrics_consumer" {
+    function_name = "MetricsConsumer"
+    description = "Metrics Consumer"
+    role          = aws_iam_role.self_service_role.arn
+    handler       = "build/microservice/Logger/main"
+    runtime       = "go1.x"
+    s3_bucket = var.application_s3_bucket
+    s3_key = "microservice/Logger/main.zip"
+    memory_size = 128
+    timeout = 30
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    environment {
+      variables = {
+        bucket = var.application_s3_bucket
+        region = var.aws_region
+        environment = var.environment
+        event_table = aws_dynamodb_table.event.name
+        application_queue = aws_sqs_queue.application_queue
+        logging_queue = aws_sqs_queue.logging_queue
+        metrics_queue = aws_sqs_queue.metrics_queue
+      }
+   }
+}
+
+resource "aws_lambda_event_source_mapping" "metrics_event_source_mapping" {
+  batch_size        = 1
+  event_source_arn  = aws_sqs_queue.metrics_queue.arn
+  enabled           = true
+  function_name     = aws_lambda_function.metrics_consumer.arn
+}
+
+resource "aws_cloudwatch_log_group" "metrics_function_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.metrics_consumer.function_name}"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "ui_controller" {
     function_name = "UiController"
     description = "UiController"
