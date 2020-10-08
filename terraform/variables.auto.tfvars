@@ -1,3 +1,4 @@
+application_name = "self-service"
 aws_account_id = "142035491160"
 aws_region = "us-west-2"
 environment = "DEV"
