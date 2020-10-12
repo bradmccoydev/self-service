@@ -125,7 +125,6 @@ resource "aws_lambda_function" "application_consumer" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
@@ -161,7 +160,6 @@ resource "aws_lambda_function" "application_controller" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
@@ -190,7 +188,6 @@ resource "aws_lambda_function" "cicd_controller" {
         secret_id = var.secret_id
         region = var.aws_region
         environment = var.environment
-        service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
       }
    }
@@ -286,7 +283,6 @@ resource "aws_lambda_function" "ui_controller" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
       }
    }
@@ -313,7 +309,6 @@ resource "aws_lambda_function" "scheduling_producer" {
         bucket = var.application_s3_bucket
         region = var.aws_region
         environment = var.environment
-        service_catalog_table = aws_dynamodb_table.service_catalog.name
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
