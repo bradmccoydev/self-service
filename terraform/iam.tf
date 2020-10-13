@@ -84,8 +84,6 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "dynamodb:*",
             "Resource": [
-                "${aws_dynamodb_table.service_catalog.arn}",
-                "${aws_dynamodb_table.service_catalog.arn}/*",
                 "${aws_dynamodb_table.application.arn}",
                 "${aws_dynamodb_table.application.arn}/*"
             ]
