@@ -216,6 +216,7 @@ resource "aws_lambda_function" "logging_consumer" {
         environment = var.environment
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
+        logLevel = 'DEBUG'
       }
    }
 }
