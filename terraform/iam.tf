@@ -73,6 +73,8 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             "Effect": "Allow",
             "Action": "sqs:*",
             "Resource": [
+                "${aws_sqs_queue.application_queue.arn}",
+                "${aws_sqs_queue.application_dlq.arn}",
                 "${aws_sqs_queue.metrics_queue.arn}",
                 "${aws_sqs_queue.metrics_dlq.arn}",
                 "${aws_sqs_queue.logging_queue.arn}",
