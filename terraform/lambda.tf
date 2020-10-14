@@ -211,12 +211,11 @@ resource "aws_lambda_function" "logging_consumer" {
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     environment {
       variables = {
-        bucket = var.application_s3_bucket
-        region = var.aws_region
-        environment = var.environment
-        application_queue = aws_sqs_queue.application_queue.id
-        logging_queue = aws_sqs_queue.logging_queue.id
-        logLevel = 'DEBUG'
+        BUCKET = aws_s3_bucket.logging.id
+        PATH = "/framework"
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        LOG_LEVEL = 'DEBUG'
       }
    }
 }
@@ -246,12 +245,11 @@ resource "aws_lambda_function" "metrics_consumer" {
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     environment {
       variables = {
-        bucket = var.application_s3_bucket
-        region = var.aws_region
-        environment = var.environment
-        application_queue = aws_sqs_queue.application_queue.id
-        logging_queue = aws_sqs_queue.logging_queue.id
-        metrics_queue = aws_sqs_queue.metrics_queue.id
+        BUCKET = aws_s3_bucket.metrics.id
+        PATH = "/framework"
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        LOG_LEVEL = 'DEBUG'
       }
    }
 }
