@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "metrics" {
-  bucket = "metrics.bradmccoy.io"
+  bucket = var.metrics_s3_bucket
   tags     = var.tags
   versioning {
     enabled = true
@@ -18,7 +18,7 @@ resource "aws_s3_bucket" "metrics" {
 }
 
 resource "aws_s3_bucket" "logging" {
-  bucket = "logging.bradmccoy.io"
+  bucket = var.logging_s3_bucket
   tags     = var.tags
   versioning {
     enabled = true

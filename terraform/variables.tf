@@ -18,10 +18,26 @@ variable "application_s3_bucket" {
   description = "AWS S3 State Bucket"
 }
 
-variable "tags" {
-  description = "AWS Tags"
+variable "logging_s3_bucket" {
+  description = "Logging S3 Bucket"
+}
+
+variable "metrics_s3_bucket" {
+  description = "Logging S3 Bucket"
+}
+
+variable "root_domain_name" {
+  description = "Root Domain name"
+}
+
+variable "application_subdomain" {
+  description = "Application Sub Domain"
 }
 
 variable "secret_id" {
   description = "Secret ID"
+}
+
+variable "tags" {
+  description = "AWS Tags"
 }
