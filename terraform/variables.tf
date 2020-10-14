@@ -1,3 +1,7 @@
+variable "application_name" {
+  description = "Aws Account ID"
+}
+
 variable "aws_account_id" {
   description = "Aws Account ID"
 }
@@ -26,12 +30,20 @@ variable "metrics_s3_bucket" {
   description = "Logging S3 Bucket"
 }
 
+variable "ui_s3_bucket" {
+  description = "UI S3 Bucket"
+}
+
 variable "root_domain_name" {
   description = "Root Domain name"
 }
 
 variable "application_subdomain" {
   description = "Application Sub Domain"
+}
+
+variable "route53_zone_id" {
+  description = "Route 53"
 }
 
 variable "secret_id" {

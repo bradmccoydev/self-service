@@ -215,7 +215,7 @@ resource "aws_lambda_function" "logging_consumer" {
         PATH = "/framework"
         REGION = var.aws_region
         ENVIRONMENT = var.environment
-        LOG_LEVEL = 'DEBUG'
+        LOG_LEVEL = "DEBUG"
       }
    }
 }
@@ -249,7 +249,7 @@ resource "aws_lambda_function" "metrics_consumer" {
         PATH = "/framework"
         REGION = var.aws_region
         ENVIRONMENT = var.environment
-        LOG_LEVEL = 'DEBUG'
+        LOG_LEVEL = "DEBUG"
       }
    }
 }
