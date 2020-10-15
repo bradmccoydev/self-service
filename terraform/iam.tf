@@ -404,3 +404,6 @@ resource "aws_iam_role_policy_attachment" "self_service_state_execution_role_pol
   role       = aws_iam_role.state_execution_role.name
   policy_arn = aws_iam_policy.self_service_state_execution_policy.arn
 }
+
+	_b5381dc60356fc35c10f44c609631635.bradmccoy.io
+  _1073c6c74424dbe8609eede1979357bc.bsgbmzkfwj.acm-validations.aws.
