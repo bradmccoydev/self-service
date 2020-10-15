@@ -91,6 +91,12 @@ resource "aws_route53_record" "api_master" {
   }
 }
 
+resource "aws_api_gateway_base_path_mapping" "master_api" {
+  api_id      = aws_api_gateway_rest_api.api_gateway_master.id
+  stage_name  = aws_api_gateway_deployment.api_gateway_deployment.stage_name
+  domain_name = aws_api_gateway_domain_name.master.domain_name
+}
+
 data "template_file" api_swagger_master{
   template = file("./master-swagger.yaml")
   vars = {
