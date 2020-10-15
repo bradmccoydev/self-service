@@ -15,11 +15,11 @@ resource "aws_cognito_identity_pool" "main" {
 }
 
 resource "aws_cognito_identity_pool_roles_attachment" "main" {
-  identity_pool_id = "${aws_cognito_identity_pool.main.id}"
+  identity_pool_id = aws_cognito_identity_pool.main.id
 
   roles = {
-    "authenticated"   = "${aws_iam_role.cognito_authenticated.arn}"
-    "unauthenticated" = "${aws_iam_role.cognito_unauthenticated.arn}"
+    "authenticated"   = aws_iam_role.cognito_authenticated.arn
+    "unauthenticated" = aws_iam_role.cognito_unauthenticated.arn
   }
 }
 
@@ -101,7 +101,7 @@ resource "aws_cognito_user_group" "manager" {
 
 resource "aws_cognito_user_pool_client" "web" {
   name         = "${var.application_name}-client-web"
-  user_pool_id = "${aws_cognito_user_pool.main.id}"
+  user_pool_id = aws_cognito_user_pool.main.id
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ resource "aws_cognito_user_pool_client" "web" {
 
 
 resource "aws_iam_role" "cognito_authenticated" {
-  name = "${var.application_name}-cognito-authenticated"
+  name = "selfservice-cognito-authenticated"
 
   assume_role_policy = <<EOF
 {
@@ -137,7 +137,7 @@ EOF
 }
 
 resource "aws_iam_role" "cognito_unauthenticated" {
-  name = "${var.application_name}-cognito-unauthenticated"
+  name = "selfservice-cognito-unauthenticated"
 
   assume_role_policy = <<EOF
 {
@@ -164,7 +164,7 @@ EOF
 }
 
 resource "aws_iam_role" "cognito_sns_role" {
-  name = "${var.application_name}-cognito-sns-role"
+  name = "selfservice-cognito-sns-role"
 
   assume_role_policy = <<EOF
 {
@@ -189,7 +189,7 @@ EOF
 }
 
 resource "aws_iam_policy" "cognito_sns_role" {
-  name        = "${var.application_name}-cognito-sns-policy"
+  name        = "selfservice-cognito-sns-policy"
   description = "${var.application_name} Cognito allow SNS publish"
 
   policy = <<EOF
@@ -211,5 +211,5 @@ EOF
 resource "aws_iam_policy_attachment" "cognito_sns_role" {
   name       = "${var.application_name}-cognito-sns-role-policy"
   roles      = ["${aws_iam_role.cognito_sns_role.name}"]
-  policy_arn = "${aws_iam_policy.cognito_sns_role.arn}"
+  policy_arn = aws_iam_policy.cognito_sns_role.arn
 }
