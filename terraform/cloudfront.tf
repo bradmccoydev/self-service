@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "frontend_cloudfront_distribution" {
     response_page_path    = "/index.html"
   }
   
-  aliases = ["${var.application_subdomain}"]
+  //aliases = ["${var.application_subdomain}"]
   
   restrictions {
     geo_restriction {
