@@ -46,6 +46,10 @@ variable "route53_zone_id" {
   description = "Route 53"
 }
 
+variable "ssl_cert" {
+  description = "SSL Cert ARN"
+}
+
 variable "secret_id" {
   description = "Secret ID"
 }
