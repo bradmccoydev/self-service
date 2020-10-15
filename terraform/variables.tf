@@ -42,6 +42,10 @@ variable "application_subdomain" {
   description = "Application Sub Domain"
 }
 
+variable "api_subdomain" {
+  description = "Api Sub Domain"
+}
+
 variable "route53_zone_id" {
   description = "Route 53"
 }
@@ -52,6 +56,10 @@ variable "ssl_cert" {
 
 variable "secret_id" {
   description = "Secret ID"
+}
+
+variable "cognito_role_external_id" {
+  description = "Cognito Unique ID"
 }
 
 variable "tags" {
