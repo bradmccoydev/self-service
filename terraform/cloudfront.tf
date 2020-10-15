@@ -1,6 +1,5 @@
 data "aws_acm_certificate" "ssl_cert" {
    domain   = "*.${var.root_domain_name}"
-   statuses = ["ISSUED"]
 }
 
 resource "aws_cloudfront_distribution" "frontend_cloudfront_distribution" {
