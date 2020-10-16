@@ -18,6 +18,25 @@ variable "environment_lower" {
   description = "Environment Name Lower"
 }
 
+variable "vpc_cidr_block" {
+  description = "VPC Cidr block"
+}
+
+variable "public_subnet_cidr_blocks" {
+  type        = list
+  description = "List of public subnet CIDR blocks"
+}
+
+variable "private_subnet_cidr_blocks" {
+  type        = list
+  description = "List of private subnet CIDR blocks"
+}
+
+variable "availability_zones" {
+  type        = list
+  description = "List of availability zones"
+}
+
 variable "application_s3_bucket" {
   description = "AWS S3 State Bucket"
 }

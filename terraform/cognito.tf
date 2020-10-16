@@ -2,7 +2,6 @@
 # Identity Pool
 # ---------------------------------------------------------------------------------------------------------------------
 
-
 resource "aws_cognito_identity_pool" "main" {
   identity_pool_name               = "${var.application_name} ${var.environment}"
   allow_unauthenticated_identities = false
@@ -26,7 +25,6 @@ resource "aws_cognito_identity_pool_roles_attachment" "main" {
 # ---------------------------------------------------------------------------------------------------------------------
 # User Pool
 # ---------------------------------------------------------------------------------------------------------------------
-
 
 resource "aws_cognito_user_pool" "main" {
   name = "${var.application_name}-${var.environment}"

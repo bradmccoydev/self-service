@@ -76,19 +76,7 @@ resource "aws_api_gateway_rest_api" "api_gateway_master" {
 
 resource "aws_api_gateway_domain_name" "master" {
   certificate_arn = var.ssl_cert
-  domain_name     = "api.bradmccoy.io"
-}
-
-resource "aws_route53_record" "api_master" {
-  name    = aws_api_gateway_domain_name.master.domain_name
-  type    = "A"
-  zone_id = var.route53_zone_id
-
-  alias {
-    evaluate_target_health = true
-    name                   = aws_api_gateway_domain_name.master.cloudfront_domain_name
-    zone_id                = aws_api_gateway_domain_name.master.cloudfront_zone_id
-  }
+  domain_name     = var.api_subdomain
 }
 
 resource "aws_api_gateway_base_path_mapping" "master_api" {
