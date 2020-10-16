@@ -18,7 +18,7 @@ variable "environment_lower" {
   description = "Environment Name Lower"
 }
 
-variable "vpc_cidr_block" {
+variable "cidr_block" {
   description = "VPC Cidr block"
 }
 
