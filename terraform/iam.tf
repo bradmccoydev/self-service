@@ -521,7 +521,7 @@ resource "aws_iam_policy_attachment" "cognito_sns_role" {
 
 
 resource "aws_iam_role" "appsync_dynamo_datasource" {
-  name = "${var.application_name}-dynamo-datasource"
+  name = "selfservice-dynamo-datasource"
 
   assume_role_policy = <<EOF
 {
@@ -542,7 +542,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "appsync_dynamo_datasource" {
-  name = "${var.application_name}-dynamo-datasource"
+  name = "selfservice-dynamo-datasource"
   role = aws_iam_role.appsync_dynamo_datasource.id
 
   policy = <<EOF
@@ -572,7 +572,7 @@ EOF
 }
 
 # resource "aws_iam_role" "appsync_notifier_lambda_datasource" {
-#   name = "${var.application_name}-notifier-datasource"
+#   name = "selfservice-notifier-datasource"
 
 #   assume_role_policy = <<EOF
 # {
@@ -593,7 +593,7 @@ EOF
 # }
 
 # resource "aws_iam_role_policy" "appsync_notifier_lambda_datasource" {
-#   name = "${var.application_name}-notifier-invocation"
+#   name = "selfservice-notifier-invocation"
 #   role = aws_iam_role.appsync_notifier_lambda_datasource.id
 
 #   policy = <<EOF
