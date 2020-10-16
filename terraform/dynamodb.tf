@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_dynamodb_table" "application" {
-  name           = "application"
+  name           = "application_metadata_registry"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
   range_key      = "version"

@@ -40,3 +40,5 @@ This Capability is for scheduling applications to ran
 
 ### CI/CD Capability
 This Capability is for the CI/CD pipelines for the applications
+
+https://github.com/tgroshon/amplify2terraform

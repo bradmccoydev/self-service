@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Lambda Execution Role
+# Lambda
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "self_service_role" {
@@ -266,6 +266,7 @@ resource "aws_iam_role" "cloudwatch" {
   ]
 }
 EOF
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy" "cloudwatch" {
@@ -404,3 +405,211 @@ resource "aws_iam_role_policy_attachment" "self_service_state_execution_role_pol
   role       = aws_iam_role.state_execution_role.name
   policy_arn = aws_iam_policy.self_service_state_execution_policy.arn
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Cognito
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_iam_role" "cognito_authenticated" {
+  name = "selfservice-cognito-authenticated"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "ForAnyValue:StringLike": {
+          "cognito-identity.amazonaws.com:amr": "authenticated"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+  tags = var.tags
+}
+
+resource "aws_iam_role" "cognito_unauthenticated" {
+  name = "selfservice-cognito-unauthenticated"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "ForAnyValue:StringLike": {
+          "cognito-identity.amazonaws.com:amr": "unauthenticated"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+  tags = var.tags
+}
+
+resource "aws_iam_role" "cognito_sns_role" {
+  name = "selfservice-cognito-sns-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "cognito-idp.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {"sts:ExternalId": "${var.cognito_role_external_id}"}
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+  tags = var.tags
+}
+
+resource "aws_iam_policy" "cognito_sns_role" {
+  name        = "selfservice-cognito-sns-policy"
+  description = "${var.application_name} Cognito allow SNS publish"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "sns:Publish*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy_attachment" "cognito_sns_role" {
+  name       = "${var.application_name}-cognito-sns-role-policy"
+  roles      = ["${aws_iam_role.cognito_sns_role.name}"]
+  policy_arn = aws_iam_policy.cognito_sns_role.arn
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# App Sync
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+resource "aws_iam_role" "appsync_dynamo_datasource" {
+  name = "${var.application_name}-dynamo-datasource"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "appsync.amazonaws.com"
+      },
+      "Effect": "Allow"
+    }
+  ]
+}
+EOF
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy" "appsync_dynamo_datasource" {
+  name = "${var.application_name}-dynamo-datasource"
+  role = aws_iam_role.appsync_dynamo_datasource.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": [
+        "${aws_dynamodb_table.application.arn}",
+        "${aws_dynamodb_table.application.arn}/*"
+      ]
+    }
+  ]
+}
+EOF
+}
+
+# resource "aws_iam_role" "appsync_notifier_lambda_datasource" {
+#   name = "${var.application_name}-notifier-datasource"
+
+#   assume_role_policy = <<EOF
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Effect": "Allow",
+#       "Principal": {
+#         "Service": "appsync.amazonaws.com"
+#       },
+#       "Action": "sts:AssumeRole"
+#     }
+#   ]
+# }
+# EOF
+
+#   tags = var.tags
+# }
+
+# resource "aws_iam_role_policy" "appsync_notifier_lambda_datasource" {
+#   name = "${var.application_name}-notifier-invocation"
+#   role = aws_iam_role.appsync_notifier_lambda_datasource.id
+
+#   policy = <<EOF
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Effect": "Allow",
+#       "Action": [
+#         "lambda:InvokeFunction"
+#       ],
+#       "Resource": [
+#         "${var.notifier_fn_arn}"
+#       ]
+#     }
+#   ]
+# }
+# EOF
+# }
