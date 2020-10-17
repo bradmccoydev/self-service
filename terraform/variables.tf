@@ -22,19 +22,29 @@ variable "cidr_block" {
   description = "VPC Cidr block"
 }
 
-variable "public_subnet_cidr_blocks" {
-  type        = list
-  description = "List of public subnet CIDR blocks"
+variable "public_subnet_cidr_block_1" {
+  description = "public subnet 1 CIDR block"
 }
 
-variable "private_subnet_cidr_blocks" {
-  type        = list
-  description = "List of private subnet CIDR blocks"
+variable "public_subnet_cidr_block_2" {
+  description = "public subnet 2 CIDR block"
 }
 
-variable "availability_zones" {
-  type        = list
-  description = "List of availability zones"
+
+variable "private_subnet_cidr_block_1" {
+  description = "private subnet 1 CIDR block"
+}
+
+variable "private_subnet_cidr_block_2" {
+  description = "private subnet 2 CIDR block"
+}
+
+variable "availability_zone_1" {
+  description = "Availability zone 1"
+}
+
+variable "availability_zone_2" {
+  description = "Availability zone 2"
 }
 
 variable "application_s3_bucket" {
