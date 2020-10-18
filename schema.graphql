@@ -1,4 +1,4 @@
-type Worker {
+type Application {
   id: ID!
   name: String!
   phone: AWSPhone!
@@ -54,31 +54,31 @@ input ModelIDFilterInput {
   beginsWith: ID
 }
 
-input ModelWorkerFilterInput {
+input ModelApplicationFilterInput {
   id: ModelIDFilterInput
   name: ModelStringFilterInput
   phone: ModelStringFilterInput
   role: ModelStringFilterInput
-  and: [ModelWorkerFilterInput]
-  or: [ModelWorkerFilterInput]
-  not: ModelWorkerFilterInput
+  and: [ModelApplicationFilterInput]
+  or: [ModelApplicationFilterInput]
+  not: ModelApplicationFilterInput
 }
 
-input CreateWorkerInput {
+input CreateApplicationInput {
   id: ID
   name: String!
   phone: AWSPhone!
   role: String
 }
 
-input UpdateWorkerInput {
+input UpdateApplicationInput {
   id: ID!
   name: String
   phone: AWSPhone
   role: String
 }
 
-input DeleteWorkerInput {
+input DeleteApplicationInput {
   id: ID!
 }
 
@@ -87,12 +87,12 @@ input DeleteWorkerInput {
 ################################
 
 type Query {
-  listApplications(filter: ModelWorkerFilterInput, limit: Int, nextToken: String): ModelApplicationConnection
+  listApplications(filter: ModelApplicationFilterInput, limit: Int, nextToken: String): ModelApplicationConnection
 }
 
 type Mutation {
-  createWorker(input: CreateWorkerInput!): Worker
-  updateWorker(input: UpdateWorkerInput!): Worker
-  deleteWorker(input: DeleteWorkerInput!): Worker
-  notifyWorker(id: ID!): NotifyResult
+  createApplication(input: CreateApplicationInput!): Worker
+  updateApplication(input: UpdateApplicationInput!): Worker
+  deleteApplication(input: DeleteApplicationInput!): Worker
+  notifyApplication(id: ID!): NotifyResult
 }
