@@ -664,7 +664,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 }
 resource "aws_iam_role_policy_attachment" "ecs_task" {
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_role_policy.ecs_task_policy.arn
+  policy_arn = aws_iam_role_policy.ecs_task_policy.id
 }
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
@@ -699,7 +699,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
       ],
       "Resource": "arn:aws:dynamodb:${var.aws_region}:*",
       "Effect": "Allow"
-    },
+    }
   ]
 }
 EOF
