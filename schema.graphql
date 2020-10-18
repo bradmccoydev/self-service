@@ -1,0 +1,98 @@
+type Application {
+  id: ID!
+  name: String!
+  phone: AWSPhone!
+  role: String
+}
+
+#########################################
+# Helper model for results of Lambda Fn #
+#########################################
+
+type NotifyResult {
+  result: String!
+  message: String
+  failures: [String]
+}
+
+############################################
+# Aggregate type for supporting pagination #
+############################################
+
+type ModelApplicationConnection {
+  items: [Worker]
+  nextToken: String
+}
+
+#################################################
+# Input Types for mutating and filtering models #
+#################################################
+
+input ModelStringFilterInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+}
+
+input ModelIDFilterInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+}
+
+input ModelApplicationFilterInput {
+  id: ModelIDFilterInput
+  name: ModelStringFilterInput
+  phone: ModelStringFilterInput
+  role: ModelStringFilterInput
+  and: [ModelApplicationFilterInput]
+  or: [ModelApplicationFilterInput]
+  not: ModelApplicationFilterInput
+}
+
+input CreateApplicationInput {
+  id: ID
+  name: String!
+  phone: AWSPhone!
+  role: String
+}
+
+input UpdateApplicationInput {
+  id: ID!
+  name: String
+  phone: AWSPhone
+  role: String
+}
+
+input DeleteApplicationInput {
+  id: ID!
+}
+
+################################
+# Schema behavior declarations #
+################################
+
+type Query {
+  listApplications(filter: ModelApplicationFilterInput, limit: Int, nextToken: String): ModelApplicationConnection
+}
+
+type Mutation {
+  createApplication(input: CreateApplicationInput!): Worker
+  updateApplication(input: UpdateApplicationInput!): Worker
+  deleteApplication(input: DeleteApplicationInput!): Worker
+  notifyApplication(id: ID!): NotifyResult
+}
