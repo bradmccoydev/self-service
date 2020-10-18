@@ -22,10 +22,6 @@ resource "aws_lambda_function" "slack_slash_command_staging" {
         environment = var.environment
       }
     }
-    vpc_config {
-      subnet_ids = [aws_subnet.private_1.id]
-      security_group_ids = [aws_security_group.vpc-sg]
-    }
 }
 
 resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
