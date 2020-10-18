@@ -94,3 +94,15 @@ variable "cognito_role_external_id" {
 variable "tags" {
   description = "AWS Tags"
 }
+
+variable "ecs_cluster_name" {
+  description = "AWS ECS Cluster Name"
+}
+
+variable "ecs_task_execution_role" {
+  description = "AWS ECS Task Execution Role Name"
+}
+
+variable "ecs_task_definition" {
+  description = "AWS ECS Task Definition Name"
+}

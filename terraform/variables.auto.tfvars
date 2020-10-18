@@ -27,3 +27,6 @@ tags = {
     "application"   = "self-service"
     "environment"   = "DEV"
 }
+ecs_cluster_name="selfservice-fargate-cluster"
+ecs_task_execution_role="selfservice-ecs-fargate-task-execution-role"
+ecs_task_definition="selfservice-ecs-task"
