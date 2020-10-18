@@ -22,6 +22,10 @@ resource "aws_lambda_function" "slack_slash_command_staging" {
         environment = var.environment
       }
     }
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg]
+    }
 }
 
 resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
@@ -120,6 +124,10 @@ resource "aws_lambda_function" "application_consumer" {
     memory_size = 256
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         secret_id = var.secret_id
@@ -155,6 +163,10 @@ resource "aws_lambda_function" "application_controller" {
     memory_size = 256
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         secret_id = var.secret_id
@@ -183,6 +195,10 @@ resource "aws_lambda_function" "cicd_controller" {
     memory_size = 256
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         secret_id = var.secret_id
@@ -209,6 +225,10 @@ resource "aws_lambda_function" "logging_consumer" {
     memory_size = 128
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         S3_BUCKET = aws_s3_bucket.logging.id
@@ -243,6 +263,10 @@ resource "aws_lambda_function" "metrics_consumer" {
     memory_size = 128
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         S3_BUCKET = aws_s3_bucket.metrics.id
@@ -277,6 +301,10 @@ resource "aws_lambda_function" "ui_controller" {
     memory_size = 256
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         bucket = var.application_s3_bucket
@@ -303,6 +331,10 @@ resource "aws_lambda_function" "scheduling_producer" {
     memory_size = 256
     timeout = 30
     source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
+    vpc_config {
+      subnet_ids = [aws_subnet.private_1.id]
+      security_group_ids = [aws_security_group.vpc-sg.id]
+    }
     environment {
       variables = {
         bucket = var.application_s3_bucket
