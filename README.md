@@ -40,3 +40,9 @@ This Capability is for scheduling applications to ran
 
 ### CI/CD Capability
 This Capability is for the CI/CD pipelines for the applications
+
+## GraphQL
+npm install -g @aws-amplify/cli
+amplify init
+amplify add codegen --apiId d6f2ychj5fahpagodx5lb6i46y
+amplify codegen

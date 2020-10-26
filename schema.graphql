@@ -20,7 +20,7 @@ type NotifyResult {
 ############################################
 
 type ModelApplicationConnection {
-  items: [Worker]
+  items: [Application]
   nextToken: String
 }
 
@@ -91,8 +91,8 @@ type Query {
 }
 
 type Mutation {
-  createApplication(input: CreateApplicationInput!): Worker
-  updateApplication(input: UpdateApplicationInput!): Worker
-  deleteApplication(input: DeleteApplicationInput!): Worker
+  createApplication(input: CreateApplicationInput!): Application
+  updateApplication(input: UpdateApplicationInput!): Application
+  deleteApplication(input: DeleteApplicationInput!): Application
   notifyApplication(id: ID!): NotifyResult
 }

@@ -668,7 +668,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task" {
 }
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
-  name = "selfservice-ecs-fargate-task-policy"
+  name = "selfservice-fargate-task"
   role = aws_iam_role.ecs_task_role.id
 
   policy = <<EOF
@@ -704,5 +704,3 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
 }
 EOF
 }
-
-//ECS task policy to be decided
