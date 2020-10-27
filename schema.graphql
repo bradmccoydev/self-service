@@ -1,98 +1,211 @@
-type Application {
-  id: ID!
-  name: String!
-  phone: AWSPhone!
-  role: String
+type ApplicationMetadataRegistry {
+	id: String!
+	version: String!
 }
 
-#########################################
-# Helper model for results of Lambda Fn #
-#########################################
-
-type NotifyResult {
-  result: String!
-  message: String
-  failures: [String]
+type ApplicationMetadataRegistryConnection {
+	items: [ApplicationMetadataRegistry]
+	nextToken: String
+}schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
 }
 
-############################################
-# Aggregate type for supporting pagination #
-############################################
+type ApplicationMetadataRegistry {
+  id: String!
+  version: String!
+}
 
-type ModelApplicationConnection {
-  items: [Application]
+type ApplicationMetadataRegistryConnection {
+  items: [ApplicationMetadataRegistry]
   nextToken: String
 }
 
-#################################################
-# Input Types for mutating and filtering models #
-#################################################
-
-input ModelStringFilterInput {
-  ne: String
-  eq: String
-  le: String
-  lt: String
-  ge: String
-  gt: String
-  contains: String
-  notContains: String
-  between: [String]
-  beginsWith: String
+type Mutation {
+  createApplicationMetadataRegistry(input: CreateApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
+  deleteApplicationMetadataRegistry(input: DeleteApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
+  updateApplicationMetadataRegistry(input: UpdateApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
 }
-
-input ModelIDFilterInput {
-  ne: ID
-  eq: ID
-  le: ID
-  lt: ID
-  ge: ID
-  gt: ID
-  contains: ID
-  notContains: ID
-  between: [ID]
-  beginsWith: ID
-}
-
-input ModelApplicationFilterInput {
-  id: ModelIDFilterInput
-  name: ModelStringFilterInput
-  phone: ModelStringFilterInput
-  role: ModelStringFilterInput
-  and: [ModelApplicationFilterInput]
-  or: [ModelApplicationFilterInput]
-  not: ModelApplicationFilterInput
-}
-
-input CreateApplicationInput {
-  id: ID
-  name: String!
-  phone: AWSPhone!
-  role: String
-}
-
-input UpdateApplicationInput {
-  id: ID!
-  name: String
-  phone: AWSPhone
-  role: String
-}
-
-input DeleteApplicationInput {
-  id: ID!
-}
-
-################################
-# Schema behavior declarations #
-################################
 
 type Query {
-  listApplications(filter: ModelApplicationFilterInput, limit: Int, nextToken: String): ModelApplicationConnection
+  getApplicationMetadataRegistry(id: String!, version: String!): ApplicationMetadataRegistry
+  listApplicationMetadataRegistries(filter: TableApplicationMetadataRegistryFilterInput, limit: Int, nextToken: String): ApplicationMetadataRegistryConnection
+}
+
+type Subscription {
+  onCreateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry @aws_subscribe(mutations : ["createApplicationMetadataRegistry"])
+  onDeleteApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry @aws_subscribe(mutations : ["deleteApplicationMetadataRegistry"])
+  onUpdateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry @aws_subscribe(mutations : ["updateApplicationMetadataRegistry"])
+}
+
+input CreateApplicationMetadataRegistryInput {
+  id: String!
+  version: String!
+}
+
+input DeleteApplicationMetadataRegistryInput {
+  id: String!
+  version: String!
+}
+
+input TableApplicationMetadataRegistryFilterInput {
+  id: TableStringFilterInput
+  version: TableStringFilterInput
+}
+
+input TableBooleanFilterInput {
+  eq: Boolean
+  ne: Boolean
+}
+
+input TableFloatFilterInput {
+  between: [Float]
+  contains: Float
+  eq: Float
+  ge: Float
+  gt: Float
+  le: Float
+  lt: Float
+  ne: Float
+  notContains: Float
+}
+
+input TableIDFilterInput {
+  beginsWith: ID
+  between: [ID]
+  contains: ID
+  eq: ID
+  ge: ID
+  gt: ID
+  le: ID
+  lt: ID
+  ne: ID
+  notContains: ID
+}
+
+input TableIntFilterInput {
+  between: [Int]
+  contains: Int
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+  notContains: Int
+}
+
+input TableStringFilterInput {
+  beginsWith: String
+  between: [String]
+  contains: String
+  eq: String
+  ge: String
+  gt: String
+  le: String
+  lt: String
+  ne: String
+  notContains: String
+}
+
+input UpdateApplicationMetadataRegistryInput {
+  id: String!
+  version: String!
+}
+
+
+input CreateApplicationMetadataRegistryInput {
+	id: String!
+	version: String!
+}
+
+input DeleteApplicationMetadataRegistryInput {
+	id: String!
+	version: String!
 }
 
 type Mutation {
-  createApplication(input: CreateApplicationInput!): Application
-  updateApplication(input: UpdateApplicationInput!): Application
-  deleteApplication(input: DeleteApplicationInput!): Application
-  notifyApplication(id: ID!): NotifyResult
+	createApplicationMetadataRegistry(input: CreateApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
+	updateApplicationMetadataRegistry(input: UpdateApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
+	deleteApplicationMetadataRegistry(input: DeleteApplicationMetadataRegistryInput!): ApplicationMetadataRegistry
+}
+
+type Query {
+	getApplicationMetadataRegistry(id: String!, version: String!): ApplicationMetadataRegistry
+	listApplicationMetadataRegistries(filter: TableApplicationMetadataRegistryFilterInput, limit: Int, nextToken: String): ApplicationMetadataRegistryConnection
+}
+
+type Subscription {
+	onCreateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
+		@aws_subscribe(mutations: ["createApplicationMetadataRegistry"])
+	onUpdateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
+		@aws_subscribe(mutations: ["updateApplicationMetadataRegistry"])
+	onDeleteApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
+		@aws_subscribe(mutations: ["deleteApplicationMetadataRegistry"])
+}
+
+input TableApplicationMetadataRegistryFilterInput {
+	id: TableStringFilterInput
+	version: TableStringFilterInput
+}
+
+input TableBooleanFilterInput {
+	ne: Boolean
+	eq: Boolean
+}
+
+input TableFloatFilterInput {
+	ne: Float
+	eq: Float
+	le: Float
+	lt: Float
+	ge: Float
+	gt: Float
+	contains: Float
+	notContains: Float
+	between: [Float]
+}
+
+input TableIDFilterInput {
+	ne: ID
+	eq: ID
+	le: ID
+	lt: ID
+	ge: ID
+	gt: ID
+	contains: ID
+	notContains: ID
+	between: [ID]
+	beginsWith: ID
+}
+
+input TableIntFilterInput {
+	ne: Int
+	eq: Int
+	le: Int
+	lt: Int
+	ge: Int
+	gt: Int
+	contains: Int
+	notContains: Int
+	between: [Int]
+}
+
+input TableStringFilterInput {
+	ne: String
+	eq: String
+	le: String
+	lt: String
+	ge: String
+	gt: String
+	contains: String
+	notContains: String
+	between: [String]
+	beginsWith: String
+}
+
+input UpdateApplicationMetadataRegistryInput {
+	id: String!
+	version: String!
 }
