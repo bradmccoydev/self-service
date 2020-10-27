@@ -667,7 +667,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task" {
   policy_arn = aws_iam_role_policy.ecs_task_policy.arn
 }
 
-resource "aws_iam_role_policy" "ecs_task_policy" {
+resource "aws_iam_policy" "ecs_task_policy" {
   name = "selfservice-fargate-task"
   role = aws_iam_role.ecs_task_role.id
 
