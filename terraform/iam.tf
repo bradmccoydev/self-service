@@ -664,7 +664,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 }
 resource "aws_iam_role_policy_attachment" "ecs_task" {
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_role_policy.ecs_task_policy.id
+  policy_arn = aws_iam_role_policy.ecs_task_policy.arn
 }
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
