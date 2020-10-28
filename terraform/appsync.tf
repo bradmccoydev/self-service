@@ -68,29 +68,29 @@ resource "aws_appsync_resolver" "list_application_metadata_registry" {
   response_template = file("../resolvers/Query.listApplicationMetadataRegistries.res.vtl")
 }
 
-# resource "aws_appsync_resolver" "createApplication" {
-#   api_id            = aws_appsync_graphql_api.main.id
-#   field             = "createWorker"
-#   type              = "Mutation"
-#   data_source       = aws_appsync_datasource.application.name
-#   request_template  = file("../resolvers/Mutation.createApplication.req.vtl")
-#   response_template = file("../resolvers/Mutation.createApplication.res.vtl")
-# }
+resource "aws_appsync_resolver" "create_application_metadata" {
+  api_id            = aws_appsync_graphql_api.main.id
+  field             = "createApplicationMetadataRegistry"
+  type              = "Mutation"
+  data_source       = aws_appsync_datasource.application.name
+  request_template  = file("../resolvers/Mutation.createApplicationMetadataRegistry.req.vtl")
+  response_template = file("../resolvers/Mutation.createApplicationMetadataRegistry.res.vtl")
+}
 
-# resource "aws_appsync_resolver" "updateApplication" {
-#   api_id            = aws_appsync_graphql_api.main.id
-#   field             = "updateWorker"
-#   type              = "Mutation"
-#   data_source       = aws_appsync_datasource.application.name
-#   request_template  = file("../resolvers/Mutation.updateApplication.req.vtl")
-#   response_template = file("../resolvers/Mutation.updateApplication.res.vtl")
-# }
+resource "aws_appsync_resolver" "update_application_metadata" {
+  api_id            = aws_appsync_graphql_api.main.id
+  field             = "updateApplicationMetadataRegistry"
+  type              = "Mutation"
+  data_source       = aws_appsync_datasource.application.name
+  request_template  = file("../resolvers/Mutation.updateApplicationMetadataRegistry.req.vtl")
+  response_template = file("../resolvers/Mutation.updateApplicationMetadataRegistry.res.vtl")
+}
 
-# resource "aws_appsync_resolver" "deleteApplication" {
-#   api_id            = aws_appsync_graphql_api.main.id
-#   field             = "deleteWorker"
-#   type              = "Mutation"
-#   data_source       = aws_appsync_datasource.application.name
-#   request_template  = file("../resolvers/Mutation.deleteApplication.req.vtl")
-#   response_template = file("../resolvers/Mutation.deleteApplication.res.vtl")
-# }
+resource "aws_appsync_resolver" "delete_application_metadata" {
+  api_id            = aws_appsync_graphql_api.main.id
+  field             = "deleteApplicationMetadataRegistry"
+  type              = "Mutation"
+  data_source       = aws_appsync_datasource.application.name
+  request_template  = file("../resolvers/Mutation.deleteApplicationMetadataRegistry.req.vtl")
+  response_template = file("../resolvers/Mutation.deleteApplicationMetadataRegistry.res.vtl")
+}

@@ -45,20 +45,3 @@ resource "aws_kms_key" "athena_kms_key" {
   deletion_window_in_days = 7
   description             = "Athena KMS Key"
 }
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Secrets
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "random_string" "random" {
-  length = 3
-  special = false
-  upper = false
-  lower = true
-  number = false
-}
-
-resource "aws_secretsmanager_secret" "app_secret" {
-  name = "self-service-${random_string.random.result}"
-  #name = "test1"
-}
