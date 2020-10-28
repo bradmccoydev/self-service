@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Lambda
 # Note: If you want to update lambda uncomment source_code_hash this will force code update
-# Slack
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "slack_slash_command_staging" {
@@ -14,12 +13,12 @@ resource "aws_lambda_function" "slack_slash_command_staging" {
     s3_key = "microservice/SlackSlashCommand/main.zip"
     memory_size = 3008
     timeout = 300
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
     environment {
       variables = {
-        secret_id = var.secret_id
-        region = var.aws_region
-        environment = var.environment
+        SECRET_ID = var.secret_id
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
       }
     }
 }
@@ -39,13 +38,13 @@ resource "aws_cloudwatch_log_group" "slack_slash_command_logs_staging" {
    s3_key = "microservice/ProcessSlackSubmission/ProcessSlackSubmission.zip"
    memory_size = 3008
    timeout = 60
-   //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
+   source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackSlashCommand/main.zip"))
    environment {
     variables = {
-      secret_id = var.secret_id
-      region = var.aws_region
-      environment = var.environment
-      api_gateway = aws_api_gateway_deployment.api_gateway_deployment_master.id
+      SECRET_ID = var.secret_id
+      REGION = var.aws_region
+      ENVIRONMENT = var.environment
+      API_GATEWAY = aws_api_gateway_deployment.api_gateway_deployment_master.id
     }
    }
   }  
@@ -65,12 +64,12 @@ resource "aws_lambda_function" "process_slack_submission" {
    s3_key = "microservice/ProcessSlackSubmission/ProcessSlackSubmission.zip"
    memory_size = 3008
    timeout = 60
-   //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
+   source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ProcessSlackSubmission/main.zip"))   
    environment {
     variables = {
-      secret_id = var.secret_id
-      region = var.aws_region
-      environment = var.environment
+      SECRET_ID = var.secret_id
+      REGION = var.aws_region
+      ENVIRONMENT = var.environment
     }
    }
 }
@@ -90,12 +89,12 @@ resource "aws_lambda_function" "slack_dynamic_data_source" {
     s3_key = "microservice/SlackDynamicDataSource/main.zip"
     memory_size = 3008
     timeout = 300
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/SlackDynamicDataSource/main.zip"))
     environment {
       variables = {
-        secret_id = var.secret_id
-        region = var.aws_region
-        environment = var.environment
+        SECRET_ID = var.secret_id
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
       }
    }
 }
@@ -119,20 +118,20 @@ resource "aws_lambda_function" "application_consumer" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
     }
     environment {
       variables = {
-        secret_id = var.secret_id
-        region = var.aws_region
-        environment = var.environment
-        application_table = aws_dynamodb_table.application.name
-        application_queue = aws_sqs_queue.application_queue.id
-        logging_queue = aws_sqs_queue.logging_queue.id
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
+        SECRET_ID = var.secret_id
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        APPLICATION_TABLE = aws_dynamodb_table.application.name
+        APPLICATION_QUEUE = aws_sqs_queue.application_queue.id
+        LOGGING_QUEUE = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
       }
    }
 }
@@ -159,20 +158,20 @@ resource "aws_lambda_function" "application_controller" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
     }
     environment {
       variables = {
-        secret_id = var.secret_id
-        region = var.aws_region
-        environment = var.environment
-        application_table = aws_dynamodb_table.application.name
-        application_queue = aws_sqs_queue.application_queue.id
-        logging_queue = aws_sqs_queue.logging_queue.id
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
+        SECRET_ID = var.secret_id
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        APPLICATION_TABLE = aws_dynamodb_table.application.name
+        APPLICATION_QUEUE = aws_sqs_queue.application_queue.id
+        LOGGING_QUEUE = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
       }
    }
 }
@@ -192,18 +191,18 @@ resource "aws_lambda_function" "cicd_controller" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
     }
     environment {
       variables = {
-        secret_id = var.secret_id
-        region = var.aws_region
-        environment = var.environment
-        application_table = aws_dynamodb_table.application.name
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
+        SECRET_ID = var.secret_id
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        APPLICATION_TABLE = aws_dynamodb_table.application.name
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
       }
    }
 }
@@ -223,7 +222,7 @@ resource "aws_lambda_function" "logging_consumer" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -235,7 +234,7 @@ resource "aws_lambda_function" "logging_consumer" {
         S3_REGION = var.aws_region
         ENVIRONMENT = var.environment
         LOG_LEVEL = "DEBUG"
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
       }
    }
 }
@@ -262,7 +261,7 @@ resource "aws_lambda_function" "metrics_consumer" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -300,18 +299,18 @@ resource "aws_lambda_function" "ui_controller" {
     s3_key = "microservice/ServiceMetadata/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
     }
     environment {
       variables = {
-        bucket = var.application_s3_bucket
-        region = var.aws_region
-        environment = var.environment
-        application_table = aws_dynamodb_table.application.name
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
+        S3_BUCKET = var.application_s3_bucket
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        APPLICATION_TABLE = aws_dynamodb_table.application.name
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
       }
    }
 }
@@ -331,22 +330,22 @@ resource "aws_lambda_function" "scheduling_producer" {
     s3_key = "microservice/Scheduler/main.zip"
     memory_size = 256
     timeout = 30
-    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
+    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
     }
     environment {
       variables = {
-        bucket = var.application_s3_bucket
-        region = var.aws_region
-        environment = var.environment
-        application_table = aws_dynamodb_table.application.name
-        application_queue = aws_sqs_queue.application_queue.id
-        logging_queue = aws_sqs_queue.logging_queue.id
-        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
-        logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
-        service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
+        S3_BUCKET = var.application_s3_bucket
+        REGION = var.aws_region
+        ENVIRONMENT = var.environment
+        APPLICATION_TABLE = aws_dynamodb_table.application.name
+        APPLICATION_QUEUE = aws_sqs_queue.application_queue.id
+        LOGGING_QUEUE = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = "https://${aws_appsync_graphql_api.main.id}appsync-api.us-west-2.amazonaws.com/graphql"
+        LOGGER_ENDPOINT = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
+        SERVICE_ENDPOINT = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }
    }
 }
