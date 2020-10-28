@@ -38,7 +38,7 @@ resource "aws_appsync_api_key" "key" {
 resource "aws_appsync_datasource" "application" {
   name             = "ApplicationTable"
   api_id           = aws_appsync_graphql_api.main.id
-  service_role_arn = aws_iam_role.appsync_dynamo_datasource.arn
+  service_role_arn = aws_iam_role.appsync.arn
   type             = "AMAZON_DYNAMODB"
 
   dynamodb_config {
@@ -50,38 +50,38 @@ resource "aws_appsync_datasource" "application" {
 # Resolvers
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_appsync_resolver" "listApplications" {
-  api_id            = aws_appsync_graphql_api.main.id
-  field             = "listApplications"
-  type              = "Query"
-  data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Query.listApplications.req.vtl")
-  response_template = file("../resolvers/Query.listApplications.res.vtl")
-}
+# resource "aws_appsync_resolver" "listApplications" {
+#   api_id            = aws_appsync_graphql_api.main.id
+#   field             = "listApplications"
+#   type              = "Query"
+#   data_source       = aws_appsync_datasource.application.name
+#   request_template  = file("../resolvers/Query.listApplications.req.vtl")
+#   response_template = file("../resolvers/Query.listApplications.res.vtl")
+# }
 
-resource "aws_appsync_resolver" "createApplication" {
-  api_id            = aws_appsync_graphql_api.main.id
-  field             = "createWorker"
-  type              = "Mutation"
-  data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.createApplication.req.vtl")
-  response_template = file("../resolvers/Mutation.createApplication.res.vtl")
-}
+# resource "aws_appsync_resolver" "createApplication" {
+#   api_id            = aws_appsync_graphql_api.main.id
+#   field             = "createWorker"
+#   type              = "Mutation"
+#   data_source       = aws_appsync_datasource.application.name
+#   request_template  = file("../resolvers/Mutation.createApplication.req.vtl")
+#   response_template = file("../resolvers/Mutation.createApplication.res.vtl")
+# }
 
-resource "aws_appsync_resolver" "updateApplication" {
-  api_id            = aws_appsync_graphql_api.main.id
-  field             = "updateWorker"
-  type              = "Mutation"
-  data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.updateApplication.req.vtl")
-  response_template = file("../resolvers/Mutation.updateApplication.res.vtl")
-}
+# resource "aws_appsync_resolver" "updateApplication" {
+#   api_id            = aws_appsync_graphql_api.main.id
+#   field             = "updateWorker"
+#   type              = "Mutation"
+#   data_source       = aws_appsync_datasource.application.name
+#   request_template  = file("../resolvers/Mutation.updateApplication.req.vtl")
+#   response_template = file("../resolvers/Mutation.updateApplication.res.vtl")
+# }
 
-resource "aws_appsync_resolver" "deleteApplication" {
-  api_id            = aws_appsync_graphql_api.main.id
-  field             = "deleteWorker"
-  type              = "Mutation"
-  data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.deleteApplication.req.vtl")
-  response_template = file("../resolvers/Mutation.deleteApplication.res.vtl")
-}
+# resource "aws_appsync_resolver" "deleteApplication" {
+#   api_id            = aws_appsync_graphql_api.main.id
+#   field             = "deleteWorker"
+#   type              = "Mutation"
+#   data_source       = aws_appsync_datasource.application.name
+#   request_template  = file("../resolvers/Mutation.deleteApplication.req.vtl")
+#   response_template = file("../resolvers/Mutation.deleteApplication.res.vtl")
+# }
