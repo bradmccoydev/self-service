@@ -132,6 +132,7 @@ resource "aws_lambda_function" "application_consumer" {
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
       }
    }
 }
@@ -171,6 +172,7 @@ resource "aws_lambda_function" "application_controller" {
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
       }
    }
 }
@@ -201,6 +203,7 @@ resource "aws_lambda_function" "cicd_controller" {
         region = var.aws_region
         environment = var.environment
         application_table = aws_dynamodb_table.application.name
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
       }
    }
 }
@@ -232,6 +235,7 @@ resource "aws_lambda_function" "logging_consumer" {
         S3_REGION = var.aws_region
         ENVIRONMENT = var.environment
         LOG_LEVEL = "DEBUG"
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
       }
    }
 }
@@ -307,6 +311,7 @@ resource "aws_lambda_function" "ui_controller" {
         region = var.aws_region
         environment = var.environment
         application_table = aws_dynamodb_table.application.name
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
       }
    }
 }
@@ -339,6 +344,7 @@ resource "aws_lambda_function" "scheduling_producer" {
         application_table = aws_dynamodb_table.application.name
         application_queue = aws_sqs_queue.application_queue.id
         logging_queue = aws_sqs_queue.logging_queue.id
+        GRAPHQL_ENDPOINT = aws_appsync_graphql_api.main.id
         logger_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/log"
         service_endpoint = "https://${aws_api_gateway_rest_api.api_gateway_master.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}/invokeService"
       }

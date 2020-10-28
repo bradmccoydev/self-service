@@ -48,7 +48,18 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
                 "secretsmanager:DescribeSecret"
             ],
             "Resource": [
-                "${aws_secretsmanager_secret.app_secret.arn}"
+                "${aws_secretsmanager_secret.app_secret.arn}",
+                "${aws_secretsmanager_secret.app_sync.arn}"
+            ]
+        },
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "appsync:*"
+            ],
+            "Resource": [
+                "${aws_appsync_graphql_api.main.arn}"
             ]
         },
         {
