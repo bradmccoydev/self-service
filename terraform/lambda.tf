@@ -119,7 +119,7 @@ resource "aws_lambda_function" "application_consumer" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicaitonConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -158,7 +158,7 @@ resource "aws_lambda_function" "application_controller" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/ApplicationController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -190,7 +190,7 @@ resource "aws_lambda_function" "cicd_controller" {
     s3_key = "microservice/ServiceInvoker/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/CiCdController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -220,7 +220,7 @@ resource "aws_lambda_function" "logging_consumer" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -258,7 +258,7 @@ resource "aws_lambda_function" "metrics_consumer" {
     s3_key = "microservice/Logger/main.zip"
     memory_size = 128
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/LoggingConsumer/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -296,7 +296,7 @@ resource "aws_lambda_function" "ui_controller" {
     s3_key = "microservice/ServiceMetadata/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/UiController/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]
@@ -326,7 +326,7 @@ resource "aws_lambda_function" "scheduling_producer" {
     s3_key = "microservice/Scheduler/main.zip"
     memory_size = 256
     timeout = 30
-    source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
+    //source_code_hash = base64encode(sha256("~/Development/bradmccoydev/self-service/build/Scheduler/main.zip"))
     vpc_config {
       subnet_ids = [aws_subnet.private_1.id]
       security_group_ids = [aws_security_group.vpc-sg.id]

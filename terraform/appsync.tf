@@ -52,7 +52,7 @@ resource "aws_appsync_datasource" "application" {
 
 resource "aws_appsync_resolver" "get_application_metadata_registry" {
   api_id            = aws_appsync_graphql_api.main.id
-  field             = "ApplicationMetadataRegistry"
+  field             = "getApplicationMetadataRegistry(...): ApplicationMetadataRegistry"
   type              = "Query"
   data_source       = aws_appsync_datasource.application.name
   request_template  = file("../resolvers/Query.getApplicationMetadataRegistry.req.vtl")
