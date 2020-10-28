@@ -47,11 +47,14 @@ type Event struct {
 
 // Handler - the actual logic
 func Handler(request Request) (string, error) {
-	region := os.Getenv("region")
-	serviceTable := os.Getenv("application_table")
-	loggerEndpoint := os.Getenv("logger_endpoint")
-	serviceEndpoint := os.Getenv("service_endpoint")
+	region := os.Getenv("REGION")
+	serviceTable := os.Getenv("APPLICATION_TABLE")
+	loggerEndpoint := os.Getenv("LOGGER_ENDPOINT")
+	serviceEndpoint := os.Getenv("SERVICE_ENDPOINT")
+	graphQLEndpoint := os.Getenv("GRAPHQL_ENDPOINT")
 	trackingID := GetUnixTimestamp()
+
+	fmt.Printf(graphQLEndpoint)
 
 	if request.ServiceID == "" {
 		fmt.Printf("No service ID provided")
