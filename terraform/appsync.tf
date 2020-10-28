@@ -59,6 +59,15 @@ resource "aws_appsync_resolver" "get_application_metadata_registry" {
   response_template = file("../resolvers/Query.getApplicationMetadataRegistry.res.vtl")
 }
 
+resource "aws_appsync_resolver" "list_application_metadata_registry" {
+  api_id            = aws_appsync_graphql_api.main.id
+  field             = "listApplicationMetadataRegistries"
+  type              = "Query"
+  data_source       = aws_appsync_datasource.application.name
+  request_template  = file("../resolvers/Query.listApplicationMetadataRegistries.req.vtl")
+  response_template = file("../resolvers/Query.listApplicationMetadataRegistries.res.vtl")
+}
+
 # resource "aws_appsync_resolver" "createApplication" {
 #   api_id            = aws_appsync_graphql_api.main.id
 #   field             = "createWorker"
