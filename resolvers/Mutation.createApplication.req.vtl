@@ -7,7 +7,7 @@ $util.qr($context.args.input.put("updatedAt", $util.time.nowISO8601()))
   "operation": "PutItem",
   "key": {
       "id": $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.id, $util.autoId())),
-      "version": "1"
+      "version": $util.dynamodb.toDynamoDBJson($util.defaultIfNullOrBlank($ctx.args.input.version, $util.autoId()))
   },
   "attributeValues": $util.dynamodb.toMapValuesJson($context.args.input),
   "condition": {

@@ -520,8 +520,8 @@ resource "aws_iam_policy_attachment" "cognito_sns_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-resource "aws_iam_role" "appsync_dynamo_datasource" {
-  name = "selfservice-dynamo-datasource"
+resource "aws_iam_role" "appsync" {
+  name = "selfservice-app-sync-role"
 
   assume_role_policy = <<EOF
 {
@@ -541,9 +541,9 @@ EOF
   tags = var.tags
 }
 
-resource "aws_iam_role_policy" "appsync_dynamo_datasource" {
-  name = "selfservice-dynamo-datasource"
-  role = aws_iam_role.appsync_dynamo_datasource.id
+resource "aws_iam_role_policy" "appsync" {
+  name = "selfservice-app-sync-policy"
+  role = aws_iam_role.appsync.id
 
   policy = <<EOF
 {
@@ -569,6 +569,11 @@ resource "aws_iam_role_policy" "appsync_dynamo_datasource" {
   ]
 }
 EOF
+}
+
+resource "aws_iam_role_policy_attachment" "appsync" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs"
+  role       = aws_iam_role.appsync.name
 }
 
 # resource "aws_iam_role" "appsync_notifier_lambda_datasource" {
