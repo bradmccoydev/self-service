@@ -55,8 +55,8 @@ resource "aws_appsync_resolver" "get_application_metadata_registry" {
   field             = "ApplicationMetadataRegistry"
   type              = "Query"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Query.getApplicationMetadataRegistry.req")
-  response_template = file("../resolvers/Query.getApplicationMetadataRegistry.res")
+  request_template  = file("../resolvers/Query.getApplicationMetadataRegistry.req.vtl")
+  response_template = file("../resolvers/Query.getApplicationMetadataRegistry.res.vtl")
 }
 
 # resource "aws_appsync_resolver" "createApplication" {
