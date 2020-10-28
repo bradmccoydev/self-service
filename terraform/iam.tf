@@ -53,7 +53,7 @@ resource "aws_iam_policy" "self_service_lambda_execution_policy" {
             ]
         },
         {
-            "Sid": "VisualEditor0",
+            "Sid": "graphql",
             "Effect": "Allow",
             "Action": [
                 "appsync:*"
