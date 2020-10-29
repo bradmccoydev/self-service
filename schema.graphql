@@ -1,7 +1,7 @@
 type ApplicationMetadataRegistry {
 	id: String!
 	version: String!
-  created_by: String!
+  	created_by: String!
 }
 
 type ApplicationMetadataRegistryConnection {
