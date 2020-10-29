@@ -1,0 +1,37 @@
+﻿.App {
+  text-align: center;
+}
+
+.nav-bar {
+  background-color: #f9fafd;
+  color: #073c9e;
+  font-family: "azo-sans";	
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  font-stretch: expanded;
+  letter-spacing: 10px;
+  line-height: 1.1em;
+  vertical-align: bottom;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}

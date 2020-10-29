@@ -12,7 +12,7 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
 }
 
 data "template_file" api_swagger{
-  template = file("./slack-swagger.yaml")
+  template = file("./../src/api/slack-swagger.yaml")
   vars = {
     Slack = aws_lambda_function.slack_slash_command_staging.invoke_arn
     SlackSlashCommand = aws_lambda_function.slack_slash_command.invoke_arn
@@ -86,7 +86,7 @@ resource "aws_api_gateway_base_path_mapping" "master_api" {
 }
 
 data "template_file" api_swagger_master{
-  template = file("./master-swagger.yaml")
+  template = file("./../src/api/master-swagger.yaml")
   vars = {
     ServiceInvoker = aws_lambda_function.application_controller.invoke_arn
     ServiceMetadata = aws_lambda_function.ui_controller.invoke_arn
