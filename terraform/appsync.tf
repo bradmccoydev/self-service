@@ -24,7 +24,7 @@ resource "aws_appsync_graphql_api" "main" {
   }
 
 
-  schema = file("../schema.graphql")
+  schema = file("./../src/api/schema.graphql")
 }
 
 resource "aws_appsync_api_key" "key" {
@@ -55,7 +55,7 @@ resource "aws_appsync_resolver" "get_application_metadata_registry" {
   field             = "getApplicationMetadataRegistry"
   type              = "Query"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Query.getApplicationMetadataRegistry.req.vtl")
+  request_template  = file("./../src/api/resolvers/Query.getApplicationMetadataRegistry.req.vtl")
   response_template = <<EOF
   $util.toJson($ctx.result)
   EOF
@@ -66,7 +66,7 @@ resource "aws_appsync_resolver" "list_application_metadata_registry" {
   field             = "listApplicationMetadataRegistries"
   type              = "Query"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Query.listApplicationMetadataRegistries.req.vtl")
+  request_template  = file("./../src/api/resolvers/Query.listApplicationMetadataRegistries.req.vtl")
   response_template = <<EOF
   $util.toJson($ctx.result)
   EOF
@@ -77,7 +77,7 @@ resource "aws_appsync_resolver" "create_application_metadata" {
   field             = "createApplicationMetadataRegistry"
   type              = "Mutation"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.createApplicationMetadataRegistry.req.vtl")
+  request_template  = file("./../src/api/resolvers/Mutation.createApplicationMetadataRegistry.req.vtl")
   response_template = <<EOF
   $util.toJson($ctx.result)
   EOF
@@ -88,7 +88,7 @@ resource "aws_appsync_resolver" "update_application_metadata" {
   field             = "updateApplicationMetadataRegistry"
   type              = "Mutation"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.updateApplicationMetadataRegistry.req.vtl")
+  request_template  = file("./../src/api/resolvers/Mutation.updateApplicationMetadataRegistry.req.vtl")
   response_template = <<EOF
   $util.toJson($ctx.result)
   EOF
@@ -99,7 +99,7 @@ resource "aws_appsync_resolver" "delete_application_metadata" {
   field             = "deleteApplicationMetadataRegistry"
   type              = "Mutation"
   data_source       = aws_appsync_datasource.application.name
-  request_template  = file("../resolvers/Mutation.deleteApplicationMetadataRegistry.req.vtl")
+  request_template  = file("./../src/api/resolvers/Mutation.deleteApplicationMetadataRegistry.req.vtl")
   response_template = <<EOF
   $util.toJson($ctx.result)
   EOF

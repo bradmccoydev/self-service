@@ -530,7 +530,6 @@ resource "aws_iam_policy_attachment" "cognito_sns_role" {
 # App Sync
 # ---------------------------------------------------------------------------------------------------------------------
 
-
 resource "aws_iam_role" "appsync" {
   name = "selfservice-app-sync-role"
 
