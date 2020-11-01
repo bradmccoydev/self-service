@@ -55,9 +55,6 @@ export class NavMenu extends Component {
             component={Link} to="/home/showheader=true">
             SELF SERVICE
           </Box>
-          <IconButton>
-            <AmplifySignOut />   
-          </IconButton>
           <IconButton
             style={{gutterBottom: true}}
             color="inherit"
@@ -69,6 +66,9 @@ export class NavMenu extends Component {
               alt="Dojo"
               width="30"
               height="30" />                      
+          </IconButton>
+          <IconButton>
+            <AmplifySignOut />   
           </IconButton>
         </Toolbar>
         </AppBar>
