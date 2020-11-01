@@ -5,8 +5,7 @@ terraform.tfstate
 terraform.tfstate.backup
 
 # dependencies
-/node_modules/
-/**/node_modules/
+node_modules
 /.pnp
 .pnp.js
 
@@ -46,6 +45,5 @@ msbuild.wrn
 *.sln
 .vs
 
-#golang
-main
-main.zip
+# Cognito ID's possibly sensitive
+config.js
