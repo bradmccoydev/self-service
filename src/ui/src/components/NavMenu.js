@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { AmplifySignOut } from '@aws-amplify/ui-react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import IconButton from '@material-ui/core/IconButton';
@@ -54,6 +55,9 @@ export class NavMenu extends Component {
             component={Link} to="/home/showheader=true">
             SELF SERVICE
           </Box>
+          <IconButton>
+            <AmplifySignOut />   
+          </IconButton>
           <IconButton
             style={{gutterBottom: true}}
             color="inherit"

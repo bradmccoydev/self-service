@@ -1,7 +1,22 @@
 type ApplicationMetadataRegistry {
 	id: String!
 	version: String!
-  	created_by: String!
+  	created_by: String
+	created_date: String
+	cron_schedule: String
+	description: String
+	documentation: String
+	endpoint: String
+	endpoint_id: String
+	last_executed: String
+	last_updated_by: String
+	last_updated_date: String
+	parameters: String
+	schema_definition: String
+	team: String
+	title: String
+	type: String
+	locked: String
 }
 
 type ApplicationMetadataRegistryConnection {
