@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import ReactGA from 'react-ga';
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
-import { Auth } from 'aws-amplify';
-import { Amplify } from 'aws-amplify';
+import { Auth, Greetings,SignIn,ConfirmSignIn,VerifyContact,ForgotPassword } from 'aws-amplify';
+import Amplify from 'aws-amplify';
 import { Router, Route, Switch } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { NavMenu } from './NavMenu';
+import Application from './Application';
 import './../style/App.css';
 import config from './../config';
 ReactGA.initialize('UA-175994834-1');
@@ -38,8 +39,15 @@ function App() {
   return (
     <div className="App">
       <NavMenu/>
+      <Application/>
     </div>
   );
 }
 
-export default withAuthenticator(App);
+export default withAuthenticator(App, true, [
+  <Greetings />,
+  <SignIn />,
+  <ConfirmSignIn />,
+  <VerifyContact />,
+  <ForgotPassword />
+])
