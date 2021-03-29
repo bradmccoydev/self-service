@@ -1,8 +1,13 @@
 # Self Service
 
-This project is designed to be a cloud-native application integration framework.
+This project is designed to be a cloud-native application integration framework. It is the UI component, and all other linked microservices can be found at the links below:
 
 ![Architecture Diagram](/src/ui/src/images/ArchitectureDiagram3d.png)
+
+# Linked Repos
+- [LogController](https://github.com/bradmccoydev/LogController)
+- [Self Service SDK](https://github.com/bradmccoydev/self-service-sdk)
+- [Self Service MarketPlace](https://github.com/bradmccoydev/self-service-marketplace)
 
 ### Cloud-native application integration has the following advantages:
 
