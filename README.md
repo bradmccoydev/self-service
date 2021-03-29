@@ -2,6 +2,8 @@
 
 This project is designed to be a cloud-native application integration framework.
 
+![Architecture Diagram](/src/ui/src/images/ArchitectureDiagram3d.png)
+
 ### Cloud-native application integration has the following advantages:
 
 * It is cost-effective
@@ -41,8 +43,4 @@ This Capability is for scheduling applications to ran
 ### CI/CD Capability
 This Capability is for the CI/CD pipelines for the applications
 
-## GraphQL
-npm install -g @aws-amplify/cli
-amplify init
-amplify add codegen --apiId d6f2ychj5fahpagodx5lb6i46y
-amplify codegen
+
