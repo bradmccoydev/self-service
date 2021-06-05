@@ -1,0 +1,17 @@
+{{/* vim: set filetype=helm: */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017
+      targetPort: 27017

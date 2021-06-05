@@ -1,0 +1,17 @@
+{{/* vim: set filetype=helm: */}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistence.pvcName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.storage }}

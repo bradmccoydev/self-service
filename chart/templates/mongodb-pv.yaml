@@ -1,0 +1,29 @@
+{{/* vim: set filetype=helm: */}}
+{{- if eq .Values.deployment.type "stackedgeminir" -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistence.pvName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessModes }}
+  capacity:
+    storage: {{ .Values.persistence.storage }}
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: ""
+  flexVolume:
+    driver: microsoft.com/smb
+    options:
+      mountoptions: vers=2.0,rw,noperm
+      source: //DVM-TMA-00106/ase-iotedge-volume
+    secretRef:
+      name: sec-smbcredentials
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+{{ end }}

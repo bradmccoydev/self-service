@@ -1,0 +1,25 @@
+{{/* vim: set filetype=helm: */}}
+{{- if eq .Values.deployment.type "stackedgeminir" -}}
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "overwatch-api.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: overwatch-api-main
+          servicePort: 80
+        path: /overwatch(/|$)(.*)
+{{ end }}

@@ -1,0 +1,21 @@
+{{- if eq .Values.deployment.type "aks" -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-metrics
+  labels:
+    prometheus: kube-prometheus
+    release: prometheus-operator
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: overwatch-api
+      release: {{ .Release.Name }}
+  namespaceSelector:
+    matchNames:
+    - overwatch-api
+  endpoints:
+  - port: https
+    interval: 10s
+{{ end }}

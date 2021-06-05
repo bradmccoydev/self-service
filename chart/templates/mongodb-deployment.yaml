@@ -1,0 +1,57 @@
+{{/* vim: set filetype=helm: */}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      securityContext:
+        fsGroup: 1001
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: mongo
+          image: docker.io/bitnami/mongodb:4.4.3-debian-10-r31
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - rm -rf /data/db/WiredTiger /data/db/WiredTiger.lock
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGO_URL
+            - name: MONGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGO_DATABASE
+          securityContext:
+            privileged: true
+            runAsUser: 1001  
+          volumeMounts:
+            - name: {{ .Values.persistence.pvcName }}
+              mountPath: /data/db
+      volumes:
+        - name: {{ .Values.persistence.pvcName }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.pvcName }}

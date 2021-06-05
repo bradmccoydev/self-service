@@ -1,0 +1,5 @@
+apiVersion: v2
+appVersion: "202105"
+description: self-service
+name: self-service
+version: "202105"

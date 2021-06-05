@@ -1,0 +1,19 @@
+{{- if eq .Values.deployment.type "aks" -}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata: 
+  name: letsencrypt-dev-wildcard-overwatch
+  namespace: overwatch-api
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ .Values.secrets.certificate }}
+  issuerRef:
+    name: {{ .Values.issuerRef }}
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.api.dev.overwatch.search365.com.au"
+{{ end }}

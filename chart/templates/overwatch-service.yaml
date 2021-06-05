@@ -1,0 +1,23 @@
+{{/* vim: set filetype=helm: */}}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+  name: {{ include "overwatch-api.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+      targetPort: {{ .Values.service.port }}
+  selector:
+    app: {{ include "overwatch-api.name" . }}
+    release: {{ .Release.Name }}

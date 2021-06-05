@@ -45,15 +45,6 @@ type Query {
 	listApplicationMetadataRegistries(filter: TableApplicationMetadataRegistryFilterInput, limit: Int, nextToken: String): ApplicationMetadataRegistryConnection
 }
 
-type Subscription {
-	onCreateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
-		@aws_subscribe(mutations: ["createApplicationMetadataRegistry"])
-	onUpdateApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
-		@aws_subscribe(mutations: ["updateApplicationMetadataRegistry"])
-	onDeleteApplicationMetadataRegistry(id: String, version: String): ApplicationMetadataRegistry
-		@aws_subscribe(mutations: ["deleteApplicationMetadataRegistry"])
-}
-
 input TableApplicationMetadataRegistryFilterInput {
 	id: TableStringFilterInput
 	version: TableStringFilterInput

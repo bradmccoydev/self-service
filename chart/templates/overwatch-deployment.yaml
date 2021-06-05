@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "overwatch-api.name" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ include "overwatch-api.name" . }}
+      release: {{ .Release.Name }}
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: {{ include "overwatch-api.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{ .Values.container.image }}
+        imagePullPolicy: Always
+        name: {{ include "overwatch-api.name" . }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+        - name: "ASPNETCORE_URLS"
+          value: "http://+:80"
+        - name: MONGO_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-config
+              key: MONGO_URL
+        - name: MONGO_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-config
+              key: MONGO_USERNAME
+        - name: MONGO_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-config
+              key: MONGO_DATABASE
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: overwatch-api-main-mongodb
+              key: mongodb-root-password
+        - name: MONGODB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: mongodb-root-password
+              name: overwatch-api-main-mongodb
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          successThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+      imagePullSecrets:
+        - name: {{ .Values.container.imagePullSecrets }}

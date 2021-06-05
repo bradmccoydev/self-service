@@ -5,7 +5,7 @@
 resource "aws_cloudwatch_event_rule" "framework_test" {
     name = "framework-daily-test"
     description = "Daily Test of Framework"
-    schedule_expression = "rate(1 day)"
+    schedule_expression = "rate(1 week)"
 }
 
 resource "aws_cloudwatch_event_target" "framework_test" {

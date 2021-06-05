@@ -1,0 +1,27 @@
+deployment:
+   type: aks
+   
+nameOverride: ""
+fullOverride: ""
+email: "bmccoy@search365.ai"
+replicaCount: 2
+namespace: overwatch-api
+issuerRef: letsencrypt-dev-cloudflare
+
+persistence:
+  pvName: mongodb-pv
+  pvcName: mongodb-pv-claim
+  accessModes: ReadWriteOnce
+  storage: 10Gi
+
+secrets:
+  certificate: letsencrypt-dev-api
+
+container:
+  imagePullSecrets: docker-registry
+  image: bradmccoydev/x
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080

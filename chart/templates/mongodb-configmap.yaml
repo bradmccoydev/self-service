@@ -1,0 +1,16 @@
+{{/* vim: set filetype=helm: */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "overwatch-api.name" . }}
+    chart: {{ include "overwatch-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  # SERVICE_NAME.NAMESPACE.svc.cluster.local:SERVICE_PORT
+  MONGO_URL: mongo.overwatch-api.svc.cluster.local:27017
+  MONGO_USERNAME: bmccoy
+  MONGO_DATABASE: test
