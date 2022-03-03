@@ -52,7 +52,6 @@ export default class Home extends Component {
                                 <TableCell>{data.endpoint}</TableCell>
                                 <TableCell>{data.last_updated_by}</TableCell>
                                 <TableCell>{data.last_executed}</TableCell>
-
                             </TableRow>
                         )}
                     </TableBody>
