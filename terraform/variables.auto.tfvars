@@ -23,7 +23,7 @@ secret_id = "selfServiceSecret"
 cognito_role_external_id = "self-service-01"
 tags = {
     "provisioner"   = "terraform"
-    "owner"         = "bradmccoy@gmail.com"
+    "owner"         = "brad@odysseycloud.io"
     "application"   = "self-service"
     "environment"   = "DEV"
 }
